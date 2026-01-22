@@ -25,54 +25,57 @@
   </div>
 
   <div class="table-container">
-    <table class="simple-table">
-      <thead>
-        <tr>
-          <th>Partner</th>
-          <th>Code</th>
-          <th>Contact</th>
-          <th>Regions</th>
-          <th>SLA</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let p of filteredPartners">
-          <td>
-            <div class="name">{{ p.name }}</div>
-            <div class="muted">{{ p.email }}</div>
-          </td>
-          <td><span class="code">{{ p.code }}</span></td>
-          <td>
+    <div class="cards-grid">
+      <div class="partner-card" *ngFor="let p of filteredPartners">
+        <div class="partner-card-top">
+          <div class="partner-avatar" aria-hidden="true">
+            <i class="pi pi-truck"></i>
+          </div>
+
+          <div class="partner-head">
+            <div class="partner-name">{{ p.name }}</div>
+            <div class="partner-sub">{{ p.email }}</div>
+          </div>
+
+          <div class="partner-meta">
+            <span class="code">{{ p.code }}</span>
+            <span class="status-badge" [ngClass]="p.status">{{ p.status }}</span>
+          </div>
+        </div>
+
+        <div class="partner-card-body">
+          <div class="partner-row">
+            <div class="muted">Contact</div>
             <div class="contact">{{ p.contactPerson }}</div>
             <div class="muted">{{ p.phone }}</div>
-          </td>
-          <td>
+          </div>
+
+          <div class="partner-row">
+            <div class="muted">Regions</div>
             <div class="regions">
               <span class="chip" *ngFor="let r of p.regions">{{ r }}</span>
             </div>
-          </td>
-          <td><span class="sla">{{ p.slaDays }} day(s)</span></td>
-          <td>
-            <span class="status-badge" [ngClass]="p.status">{{ p.status }}</span>
-          </td>
-          <td class="actions">
-            <button type="button" class="btn" (click)="openView(p)">
-              <i class="pi pi-eye"></i>
-              View
-            </button>
-          </td>
-        </tr>
+          </div>
 
-        <tr *ngIf="filteredPartners.length === 0">
-          <td colspan="7" class="no-data">
-            <i class="pi pi-inbox"></i>
-            <p>No partners found</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          <div class="partner-row">
+            <div class="muted">SLA</div>
+            <div class="sla">{{ p.slaDays }} day(s)</div>
+          </div>
+        </div>
+
+        <div class="partner-card-actions">
+          <button type="button" class="btn" (click)="$event.stopPropagation(); openView(p)">
+            <i class="pi pi-eye"></i>
+            View
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="filteredPartners.length === 0" class="no-data">
+        <i class="pi pi-inbox"></i>
+        <p>No partners found</p>
+      </div>
+    </div>
   </div>
 
   <div class="modal-overlay" *ngIf="viewModalVisible" (click)="closeView()">

@@ -72,7 +72,18 @@ export class ThreeplPartnersComponent implements OnInit {
         regions: ['Nationwide'],
         status: 'inactive',
         slaDays: 4
-      }
+      },
+      {
+        id: 4,
+        name: 'DSL eCommerce',
+        code: 'DSL',
+        contactPerson: 'Adeel Noshahi',
+        phone: '0300-7777777',
+        email: 'support@dhl.example',
+        regions: ['Punjab', 'Sindh'],
+        status: 'active',
+        slaDays: 3
+      },
     ];
   }
 
@@ -101,6 +112,7 @@ export class ThreeplPartnersComponent implements OnInit {
   }
 
   openView(partner: ThreePLPartner): void {
+    console.log('openView partner:', partner);
     this.selectedPartner = partner;
     this.viewModalVisible = true;
   }
