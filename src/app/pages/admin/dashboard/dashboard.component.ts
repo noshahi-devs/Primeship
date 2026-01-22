@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {
   // Stats Cards Data
@@ -58,7 +58,7 @@ export class DashboardComponent {
       amount: '$1,199',
       status: 'completed',
       date: '2024-01-20',
-      avatar: 'https://via.placeholder.com/32x32'
+      avatar: '/assets/images/71fhEWlRnBL._AC_SX679_.jpg'
     },
     {
       id: '#12346',
@@ -67,7 +67,7 @@ export class DashboardComponent {
       amount: '$1,299',
       status: 'processing',
       date: '2024-01-20',
-      avatar: 'https://via.placeholder.com/32x32'
+      avatar: '/assets/images/81Ec4jJZ-dL._AC_SX679_.jpg'
     },
     {
       id: '#12347',
@@ -76,7 +76,7 @@ export class DashboardComponent {
       amount: '$249',
       status: 'pending',
       date: '2024-01-19',
-      avatar: 'https://via.placeholder.com/32x32'
+      avatar: '/assets/images/61BKAbqOL5L._AC_SX679_.jpg'
     },
     {
       id: '#12348',
@@ -85,7 +85,7 @@ export class DashboardComponent {
       amount: '$599',
       status: 'completed',
       date: '2024-01-19',
-      avatar: 'https://via.placeholder.com/32x32'
+      avatar: '/assets/images/81WVHwqiT7L._AC_SX679_.jpg'
     }
   ];
 
@@ -97,7 +97,7 @@ export class DashboardComponent {
       revenue: '$280,266',
       stock: 45,
       trend: 'up',
-      image: 'https://via.placeholder.com/60x60'
+      image: '/assets/images/81WVHwqiT7L._AC_SX679_.jpg'
     },
     {
       name: 'MacBook Air M2',
@@ -105,7 +105,7 @@ export class DashboardComponent {
       revenue: '$202,644',
       stock: 23,
       trend: 'up',
-      image: 'https://via.placeholder.com/60x60'
+      image: '/assets/images/61ZY6ZP0V6L._AC_SL1024_.jpg'
     },
     {
       name: 'AirPods Pro',
@@ -113,7 +113,7 @@ export class DashboardComponent {
       revenue: '$110,805',
       stock: 89,
       trend: 'down',
-      image: 'https://via.placeholder.com/60x60'
+      image: '/assets/images/71iF4G8NVfL._AC_SX679_.jpg'
     },
     {
       name: 'iPad Air',
@@ -121,7 +121,7 @@ export class DashboardComponent {
       revenue: '$73,677',
       stock: 34,
       trend: 'stable',
-      image: 'https://via.placeholder.com/60x60'
+      image: '/assets/images/81j8RchuiLL._AC_SX679_.jpg'
     }
   ];
 

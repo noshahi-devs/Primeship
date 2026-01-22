@@ -10,39 +10,21 @@
 }
 
 :root {
-  /* Brand Colors - Noshahi Mart Professional Theme */
-  --primary: #0FB9B1;
-  --primary-dark: #0DA39C;
-  --primary-light: #3FC9C3;
+  /* DARAZ THEME */
+  --primary: #F85606;           /* Daraz Orange */
+  --primary-dark: #E64A00;
+  --primary-light: rgba(248, 86, 6, 0.15);
 
-  /* Sidebar Gradient - Dark Blue-Green */
-  --sidebar-start: #0F2027;
-  --sidebar-mid: #203A43;
-  --sidebar-end: #2C5364;
-  --sidebar-gradient: linear-gradient(180deg, #0F2027 0%, #203A43 50%, #2C5364 100%);
+  --primary-gradient: linear-gradient(
+    135deg,
+    #F85606 0%,
+    #E64A00 100%
+  );
 
-  /* Primary Gradients */
-  --primary-gradient: linear-gradient(135deg, #0FB9B1 0%, #0DA39C 100%);
-  --secondary-gradient: linear-gradient(135deg, #FF9F43 0%, #FF8C1A 100%);
-  --accent-gradient: linear-gradient(135deg, #3FC9C3 0%, #0FB9B1 100%);
-  --dark-gradient: linear-gradient(135deg, #203A43 0%, #0F2027 100%);
-
-  /* Glassmorphism - Updated for light theme */
-  --glass-bg: rgba(255, 255, 255, 0.95);
-  --glass-border: rgba(229, 231, 235, 1);
-  --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-  /* 3D Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
-  --shadow-3d: 0 12px 24px rgba(0, 0, 0, 0.15);
-
-  /* Action Colors */
-  --action-primary: #FF9F43;
-  --action-hover: #FF8C1A;
-
+  /* Text */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-light: #9CA3AF;
   /* Status Colors - ERP Standard */
   --success: #10B981;
   --warning: #F59E0B;
@@ -50,20 +32,13 @@
   --error: #EF4444;
   --info: #3B82F6;
 
-  /* Text Colors */
-  --text-primary: #1F2937;
-  --text-secondary: #6B7280;
-  --text-light: #9CA3AF;
-  --text-white: #FFFFFF;
-
-  /* Background Colors */
-  --bg-main: #F4F6F8;
-  --bg-card: #FFFFFF;
+  /* Backgrounds */
+  --bg-main: #F9FAFB;
   --bg-header: #FFFFFF;
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F9FAFB;
-  --bg-dark: #1F2937;
+  --bg-secondary: #F3F4F6;
+  --bg-card: #FFFFFF;
 }
+
 
 body {
   font-family: 'Inter', sans-serif;

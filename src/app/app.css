@@ -237,12 +237,16 @@
 }
 
 .nav-item.active .nav-link {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(10px);
-  color: white;
-  border-left: 3px solid #F85606;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transform: translateX(3px);
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-weight: 600;
+  border-left: 3px solid #fff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  transform: translateX(0px);
+}
+
+.nav-item.active .nav-link .nav-icon {
+  transform: scale(1.1);
 }
 
 .nav-icon {
