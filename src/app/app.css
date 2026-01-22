@@ -28,13 +28,13 @@
   top: 0;
   width: 280px;
   height: 100vh;
-  background: var(--sidebar-gradient);
+  background: linear-gradient(135deg, #F85606 0%, #E64A00 100%);
   padding: 0;
   display: flex;
   flex-direction: column;
   z-index: 1000;
   overflow: hidden;
-  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transform: translateZ(0);
   will-change: transform;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -59,13 +59,13 @@
 .logo-3d {
   width: 40px;
   height: 40px;
-  background: var(--primary-gradient);
+  background: #F85606;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  box-shadow: 0 4px 12px rgba(15, 185, 177, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   animation: float 3s ease-in-out infinite;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
@@ -73,7 +73,7 @@
 
 .logo-3d:hover {
   transform: scale(1.1) rotateY(180deg);
-  box-shadow: 0 8px 24px rgba(15, 185, 177, 0.5);
+  box-shadow: 0 8px 24px rgba(248, 86, 6, 0.3);
 }
 
 .brand-info h3 {
@@ -94,7 +94,8 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
   border-radius: 0;
   margin: 0 0 1rem 0;
   flex-shrink: 0;
@@ -236,10 +237,11 @@
 }
 
 .nav-item.active .nav-link {
-  background: linear-gradient(135deg, rgba(15, 185, 177, 0.15), rgba(13, 163, 156, 0.15));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(10px);
   color: white;
-  border-left: 3px solid var(--primary);
-  box-shadow: 0 4px 20px rgba(15, 185, 177, 0.2);
+  border-left: 3px solid #F85606;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   transform: translateX(3px);
 }
 
@@ -347,8 +349,8 @@
 }
 
 .search-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(15, 185, 177, 0.1), 0 0 20px rgba(15, 185, 177, 0.2);
+  border-color: #F85606;
+  box-shadow: 0 0 0 3px rgba(248, 86, 6, 0.1), 0 0 20px rgba(248, 86, 6, 0.2);
   background: white;
   transform: translateY(-2px);
 }

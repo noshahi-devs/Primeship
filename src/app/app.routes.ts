@@ -3,6 +3,8 @@ import { DashboardComponent } from './pages/admin/dashboard/dashboard.component'
 import { ProductsComponent } from './pages/admin/products/products.component';
 import { SellerDashboardComponent } from './pages/seller/dashboard/seller-dashboard.component';
 import { CategoriesComponent } from './pages/admin/categories/categories.component';
+import { OrdersComponent } from './pages/admin/orders/orders.component';
+import { ThreeplPartnersComponent } from './pages/admin/threepl-partners/threepl-partners.component';
 
 export const routes: Routes = [
   {
@@ -31,7 +33,11 @@ export const routes: Routes = [
       },
       {
         path: 'orders',
-        component: DashboardComponent // Placeholder
+        component: OrdersComponent
+      },
+      {
+        path: 'threepl-partners',
+        component: ThreeplPartnersComponent
       },
       {
         path: 'customers',

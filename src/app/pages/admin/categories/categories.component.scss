@@ -1,6 +1,6 @@
 // Variables
-$primary-color: #0fb9b1;
-$primary-dark: #0da39c;
+$primary-color: #F85606;
+$primary-dark: #E64A00;
 $danger-color: #ef4444;
 $danger-dark: #dc2626;
 $secondary-color: #6b7280;
@@ -198,7 +198,9 @@ $shadow-medium: rgba(0, 0, 0, 0.15);
           border-bottom: 1px solid rgba($border-color, 0.5);
 
           &:hover {
-            background: rgba($primary-color, 0.03);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: #fff;
           }
 
           &:last-child {
@@ -235,8 +237,8 @@ $shadow-medium: rgba(0, 0, 0, 0.15);
     font-weight: 500;
 
     &.active {
-      background: rgba(16, 185, 129, 0.1);
-      color: #065f46;
+      background: #C2FFFA;
+      color: #008075;
     }
 
     &.inactive {

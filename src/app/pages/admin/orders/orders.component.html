@@ -1,0 +1,148 @@
+<div class="orders-container">
+  <div class="header">
+    <div class="header-title">
+      <h2><i class="pi pi-shopping-cart"></i> Orders</h2>
+      <p>Manage customer orders and fulfillment status</p>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Search by order no, customer or phone..." [(ngModel)]="searchTerm" (input)="applyFilters()" />
+    </div>
+
+    <select [(ngModel)]="selectedStatus" (change)="applyFilters()">
+      <option value="all">All Status</option>
+      <option value="pending">Pending</option>
+      <option value="processing">Processing</option>
+      <option value="shipped">Shipped</option>
+      <option value="delivered">Delivered</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+
+    <button type="button" class="btn" (click)="clearFilters()">
+      <i class="pi pi-filter-slash"></i>
+      Clear
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Customer</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let order of filteredOrders">
+          <td>
+            <div class="order-no">{{ order.orderNo }}</div>
+            <div class="muted">#{{ order.id }}</div>
+          </td>
+          <td>
+            <div class="customer">
+              <div class="name">{{ order.customerName }}</div>
+              <div class="muted">{{ order.phone }}</div>
+            </div>
+          </td>
+          <td>{{ order.createdAt | date: 'mediumDate' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="order.status">{{ getStatusLabel(order.status) }}</span>
+          </td>
+          <td class="total">{{ formatPrice(getOrderTotal(order)) }}</td>
+          <td class="actions">
+            <button type="button" class="btn" (click)="openView(order)">
+              <i class="pi pi-eye"></i>
+              View
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="filteredOrders.length === 0">
+          <td colspan="6" class="no-data">
+            <i class="pi pi-inbox"></i>
+            <p>No orders found</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="viewModalVisible" (click)="closeView()">
+    <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedOrder">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="pi pi-receipt"></i>
+          <h3>Order Details</h3>
+        </div>
+        <button type="button" class="btn icon close-btn" (click)="closeView()" title="Close">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="summary">
+          <div>
+            <div class="muted">Order</div>
+            <div class="value">{{ selectedOrder.orderNo }}</div>
+          </div>
+          <div>
+            <div class="muted">Customer</div>
+            <div class="value">{{ selectedOrder.customerName }}</div>
+          </div>
+          <div>
+            <div class="muted">Status</div>
+            <div class="value">
+              <span class="status-badge" [ngClass]="selectedOrder.status">{{ getStatusLabel(selectedOrder.status) }}</span>
+            </div>
+          </div>
+          <div>
+            <div class="muted">Total</div>
+            <div class="value">{{ formatPrice(getOrderTotal(selectedOrder)) }}</div>
+          </div>
+        </div>
+
+        <div class="address">
+          <div class="muted">Shipping Address</div>
+          <div class="value">{{ selectedOrder.address }}</div>
+        </div>
+
+        <div class="items">
+          <h4>Items</h4>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Line Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of selectedOrder.items">
+                <td>{{ it.name }}</td>
+                <td>{{ it.qty }}</td>
+                <td>{{ formatPrice(it.price) }}</td>
+                <td>{{ formatPrice(it.qty * it.price) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" (click)="closeView()">
+          <i class="pi pi-times"></i>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
