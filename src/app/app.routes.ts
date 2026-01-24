@@ -11,47 +11,54 @@ import { SellersComponent } from './pages/admin/sellers/sellers.component';
 import { FinanceComponent } from './pages/admin/finance/finance.component';
 import { HomeComponent } from './public/home/home.component';
 
+import { PublicLayoutComponent } from './public/public-layout/public-layout.component';
+import { AdminLayoutComponent } from './pages/admin/admin-layout/admin-layout.component';
+
 export const routes: Routes = [
   {
-    path: '',
-    redirectTo: '/home',
-    component: HomeComponent
+    path: 'auth',
+    loadChildren: () => import('./public/auth/auth.module').then(m => m.AuthModule)
   },
- {
+  {
+    path: '',
+    component: PublicLayoutComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full'
+      },
+      {
         path: 'home',
         component: HomeComponent
       },
-  {
-    path: 'home',
-    loadComponent: () => import('./public/home/home.component').then(m => m.HomeComponent)
+      {
+        path: 'category/:slug',
+        loadComponent: () => import('./public/product-list/product-list.component').then(m => m.ProductListComponent)
+      },
+      {
+        path: 'product/:slug',
+        loadComponent: () => import('./public/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+      },
+      {
+        path: 'cart',
+        loadComponent: () => import('./public/cart/cart.component').then(m => m.CartComponent)
+      },
+      {
+        path: 'checkout',
+        loadComponent: () => import('./public/checkout/checkout.component').then(m => m.CheckoutComponent)
+      }
+    ]
   },
-  {
-    path: 'category/:slug',
-    loadComponent: () => import('./public/product-list/product-list.component').then(m => m.ProductListComponent)
-  },
-  {
-    path: 'product/:slug',
-    loadComponent: () => import('./public/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
-  },
-  {
-    path: 'cart',
-    loadComponent: () => import('./public/cart/cart.component').then(m => m.CartComponent)
-  },
-  {
-    path: 'checkout',
-    loadComponent: () => import('./public/checkout/checkout.component').then(m => m.CheckoutComponent)
-  },
-  // {
-  //   path: 'auth',
-  //   loadChildren: () => import('./public/auth/auth.routes').then(m => m.authRoutes)
-  // },
-  // {
-  //   path: 'account',
-  //   loadChildren: () => import('./public/account/account.routes').then(m => m.accountRoutes)
-  // },
   {
     path: 'admin',
+    component: AdminLayoutComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
       {
         path: 'dashboard',
         component: DashboardComponent
@@ -104,7 +111,13 @@ export const routes: Routes = [
   },
   {
     path: 'seller',
+    component: AdminLayoutComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
       {
         path: 'dashboard',
         component: SellerDashboardComponent

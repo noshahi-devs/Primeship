@@ -24,7 +24,6 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    HomeComponent,
     ProductListComponent,
     ProductDetailComponent,
     CartComponent,
@@ -35,7 +34,8 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     SharedModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    HomeComponent
   ]
 })
 export class PublicModule { }
