@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-seller-dashboard',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './seller-dashboard.component.html',
-  styleUrls: ['./seller-dashboard.component.css']
+  styleUrls: ['./seller-dashboard.component.scss']
 })
 export class SellerDashboardComponent {
   // Seller Stats
@@ -51,6 +52,7 @@ export class SellerDashboardComponent {
       id: '#S12345',
       customer: 'Alice Johnson',
       product: 'iPhone 15 Pro Case',
+      image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=96&h=96&fit=crop',
       amount: '$29.99',
       status: 'completed',
       date: '2024-01-20',
@@ -60,6 +62,7 @@ export class SellerDashboardComponent {
       id: '#S12346',
       customer: 'Bob Smith',
       product: 'MacBook Air Sleeve',
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=96&h=96&fit=crop',
       amount: '$39.99',
       status: 'processing',
       date: '2024-01-20',
@@ -69,6 +72,7 @@ export class SellerDashboardComponent {
       id: '#S12347',
       customer: 'Carol Davis',
       product: 'AirPods Pro Accessories',
+      image: 'https://images.unsplash.com/photo-1585386959984-a41552231693?w=96&h=96&fit=crop',
       amount: '$19.99',
       status: 'pending',
       date: '2024-01-19',
@@ -84,7 +88,7 @@ export class SellerDashboardComponent {
       revenue: '$1,349.55',
       rating: 4.8,
       stock: 120,
-      image: 'https://via.placeholder.com/60x60'
+      image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=96&h=96&fit=crop'
     },
     {
       name: 'MacBook Air Sleeve',
@@ -92,7 +96,7 @@ export class SellerDashboardComponent {
       revenue: '$919.77',
       rating: 4.9,
       stock: 45,
-      image: 'https://via.placeholder.com/60x60'
+      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=96&h=96&fit=crop'
     },
     {
       name: 'AirPods Pro Accessories',
@@ -100,7 +104,7 @@ export class SellerDashboardComponent {
       revenue: '$1,339.33',
       rating: 4.7,
       stock: 89,
-      image: 'https://via.placeholder.com/60x60'
+      image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=96&h=96&fit=crop'
     }
   ];
 
@@ -116,13 +120,100 @@ export class SellerDashboardComponent {
 
   // Quick Actions
   quickActions = [
-    { title: 'Add New Product', icon: '➕', route: '/seller/products/add' },
-    { title: 'View Orders', icon: '📋', route: '/seller/orders' },
-    { title: 'Earnings Report', icon: '💰', route: '/seller/earnings' },
-    { title: 'Edit Profile', icon: '👤', route: '/seller/profile' }
+    {
+      title: 'Add New Product',
+      icon: '➕',
+      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=96&h=96&fit=crop',
+      route: '/seller/products/add'
+    },
+    {
+      title: 'View Orders',
+      icon: '📋',
+      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=96&h=96&fit=crop',
+      route: '/seller/orders'
+    },
+    {
+      title: 'Earnings Report',
+      icon: '💰',
+      image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=96&h=96&fit=crop',
+      route: '/seller/earnings'
+    },
+    {
+      title: 'Edit Profile',
+      icon: '👤',
+      image: 'https://images.unsplash.com/photo-1520975916090-3105956dac38?w=96&h=96&fit=crop',
+      route: '/seller/profile'
+    }
   ];
 
-  constructor() { }
+  // Inventory Alerts (New Section)
+  inventoryAlerts = [
+    {
+      name: 'MacBook Air Sleeve',
+      image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=96&h=96&fit=crop',
+      stock: 45,
+      threshold: 50,
+      severity: 'warning'
+    },
+    {
+      name: 'AirPods Pro Accessories',
+      image: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=96&h=96&fit=crop',
+      stock: 12,
+      threshold: 25,
+      severity: 'critical'
+    }
+  ];
+
+  // Customer Reviews Data
+  customerReviews = [
+    {
+      customer: 'Sarah Johnson',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=50&h=50&fit=crop&crop=face',
+      rating: 5,
+      date: '2 days ago',
+      comment: 'Excellent product quality and fast shipping! Very satisfied with my purchase.',
+      product: 'Wireless Headphones'
+    },
+    {
+      customer: 'Michael Chen',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face',
+      rating: 4,
+      date: '1 week ago',
+      comment: 'Great value for money. Product works as described and customer service was helpful.',
+      product: 'Smart Watch'
+    },
+    {
+      customer: 'Emily Rodriguez',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face',
+      rating: 5,
+      date: '2 weeks ago',
+      comment: 'Amazing quality! Will definitely order again. Highly recommended seller.',
+      product: 'Laptop Stand'
+    }
+  ];
+
+  constructor(private router: Router) { }
+
+  // Navigation Methods
+  navigateToOrders() {
+    this.router.navigate(['/seller/orders']);
+  }
+
+  navigateToProducts() {
+    this.router.navigate(['/seller/products']);
+  }
+
+  navigateToEarnings() {
+    this.router.navigate(['/seller/earnings']);
+  }
+
+  navigateToProfile() {
+    this.router.navigate(['/seller/profile']);
+  }
+
+  navigateToRoute(route: string) {
+    this.router.navigate([route]);
+  }
 
   getStatusColor(status: string): string {
     const colors: { [key: string]: string } = {
@@ -154,14 +245,16 @@ export class SellerDashboardComponent {
   }
 
   onQuickAction(action: any) {
-    console.log('Quick action clicked:', action);
+    if (action.route) {
+      this.navigateToRoute(action.route);
+    }
   }
 
   viewOrderDetails(orderId: string) {
-    console.log('View order details:', orderId);
+    this.navigateToRoute(`/seller/orders`);
   }
 
   viewProductDetails(productName: string) {
-    console.log('View product details:', productName);
+    this.navigateToRoute(`/seller/products`);
   }
 }
