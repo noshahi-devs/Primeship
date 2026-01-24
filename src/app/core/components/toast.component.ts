@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ToastService, Toast } from '../services/toast.service';
 
 @Component({
-    selector: 'app-toast',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-toast',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <div class="toast-container">
       <div *ngFor="let toast of toasts" 
-           class="toast toast-{{toast.type}}"
-           [@slideIn]>
+       class="toast" 
+       [ngClass]="'toast-' + toast.type">
         <div class="toast-icon">
           <i class="fas" [ngClass]="{
             'fa-check-circle': toast.type === 'success',
@@ -26,7 +26,7 @@ import { ToastService, Toast } from '../services/toast.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .toast-container {
       position: fixed;
       top: 20px;
@@ -129,15 +129,15 @@ import { ToastService, Toast } from '../services/toast.service';
   `]
 })
 export class ToastComponent {
-    toasts: Toast[] = [];
+  toasts: Toast[] = [];
 
-    constructor(private toastService: ToastService) {
-        this.toastService.toasts$.subscribe(toasts => {
-            this.toasts = toasts;
-        });
-    }
+  constructor(public toastService: ToastService) {
+    this.toastService.toasts$.subscribe(toasts => {
+      this.toasts = toasts;
+    });
+  }
 
-    remove(id: number): void {
-        this.toastService.remove(id);
-    }
+  remove(id: number): void {
+    this.toastService.remove(id);
+  }
 }

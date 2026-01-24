@@ -75,8 +75,10 @@ export class AuthService {
     /**
      * Login to Prime Ship
      */
-    login(input: LoginInput): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(
+    login(input: LoginInput): Observable<any> {
+        console.log('🔐 AuthService.login called with:', { email: input.userNameOrEmailAddress });
+
+        return this.http.post<any>(
             `${this.apiUrl}/TokenAuth/Authenticate`,
             input,
             {
@@ -84,13 +86,28 @@ export class AuthService {
             }
         ).pipe(
             tap(response => {
-                if (response && response.accessToken) {
-                    this.setToken(response.accessToken);
-                    this.setUserId(response.userId.toString());
+                console.log('📦 AuthService received response:', response);
+
+                // API returns: { result: { accessToken, userId }, success, error }
+                if (response && response.result && response.result.accessToken) {
+                    console.log('✅ Valid token found in response.result');
+                    console.log('💾 Storing token:', response.result.accessToken.substring(0, 20) + '...');
+                    console.log('💾 Storing userId:', response.result.userId);
+
+                    this.setToken(response.result.accessToken);
+                    this.setUserId(response.result.userId.toString());
+
+                    console.log('✅ Token stored in localStorage');
+                    console.log('🔍 Verify token in localStorage:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
+
                     this.currentUserSubject.next({
-                        token: response.accessToken,
-                        userId: response.userId
+                        token: response.result.accessToken,
+                        userId: response.result.userId
                     });
+
+                    console.log('✅ currentUserSubject updated');
+                } else {
+                    console.error('❌ Invalid response structure:', response);
                 }
             })
         );
