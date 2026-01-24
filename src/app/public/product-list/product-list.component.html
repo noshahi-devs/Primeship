@@ -1,0 +1,123 @@
+<div class="product-list-container">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="page-title">Products</h1>
+        <div class="filters-section">
+          <div class="row">
+            <div class="col-md-3">
+              <select class="form-select">
+                <option>Sort by: Featured</option>
+                <option>Price: Low to High</option>
+                <option>Price: High to Low</option>
+                <option>Newest First</option>
+                <option>Best Rating</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select">
+                <option>All Categories</option>
+                <option>Electronics</option>
+                <option>Fashion</option>
+                <option>Home & Living</option>
+                <option>Beauty</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <div class="price-range">
+                <input type="number" class="form-control" placeholder="Min Price">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="price-range">
+                <input type="number" class="form-control" placeholder="Max Price">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-md-3">
+        <div class="sidebar-filters">
+          <h5>Categories</h5>
+          <div class="category-list">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="cat1">
+              <label class="form-check-label" for="cat1">Electronics (245)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="cat2">
+              <label class="form-check-label" for="cat2">Fashion (189)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="cat3">
+              <label class="form-check-label" for="cat3">Home & Living (156)</label>
+            </div>
+          </div>
+          
+          <h5>Price Range</h5>
+          <div class="price-filter">
+            <input type="range" class="form-range" min="0" max="1000">
+            <div class="d-flex justify-content-between">
+              <span>$0</span>
+              <span>$1000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-9">
+        <div class="products-grid">
+          <div class="row">
+            <div class="col-md-4 col-sm-6 mb-4" *ngFor="let product of products">
+              <div class="product-card">
+                <div class="product-image">
+                  <img [src]="product.image" [alt]="product.name">
+                  <div class="product-actions">
+                    <button class="btn btn-sm btn-outline-primary">Quick View</button>
+                    <button class="btn btn-sm btn-outline-danger">Wishlist</button>
+                  </div>
+                </div>
+                <div class="product-info">
+                  <h6 class="product-name">{{ product.name }}</h6>
+                  <div class="product-price">
+                    <span class="current-price">${{ product.price }}</span>
+                    <span class="original-price" *ngIf="product.originalPrice">${{ product.originalPrice }}</span>
+                    <span class="discount" *ngIf="product.discount">{{ product.discount }}% OFF</span>
+                  </div>
+                  <div class="product-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-count">({{ product.reviewCount }})</span>
+                  </div>
+                  <button class="btn btn-primary btn-sm w-100">Add to Cart</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <nav class="pagination-nav">
+          <ul class="pagination">
+            <li class="page-item disabled">
+              <a class="page-link" href="#">Previous</a>
+            </li>
+            <li class="page-item active">
+              <a class="page-link" href="#">1</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#">2</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#">3</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#">Next</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

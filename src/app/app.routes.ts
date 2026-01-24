@@ -5,13 +5,50 @@ import { SellerDashboardComponent } from './pages/seller/dashboard/seller-dashbo
 import { CategoriesComponent } from './pages/admin/categories/categories.component';
 import { OrdersComponent } from './pages/admin/orders/orders.component';
 import { ThreeplPartnersComponent } from './pages/admin/threepl-partners/threepl-partners.component';
+import { InventoryComponent } from './pages/admin/inventory/inventory.component';
+import { CustomersComponent } from './pages/admin/customers/customers.component';
+import { SellersComponent } from './pages/admin/sellers/sellers.component';
+import { FinanceComponent } from './pages/admin/finance/finance.component';
+import { HomeComponent } from './public/home/home.component';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/admin/dashboard',
-    pathMatch: 'full'
+    redirectTo: '/home',
+    component: HomeComponent
   },
+ {
+        path: 'home',
+        component: HomeComponent
+      },
+  {
+    path: 'home',
+    loadComponent: () => import('./public/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'category/:slug',
+    loadComponent: () => import('./public/product-list/product-list.component').then(m => m.ProductListComponent)
+  },
+  {
+    path: 'product/:slug',
+    loadComponent: () => import('./public/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+  },
+  {
+    path: 'cart',
+    loadComponent: () => import('./public/cart/cart.component').then(m => m.CartComponent)
+  },
+  {
+    path: 'checkout',
+    loadComponent: () => import('./public/checkout/checkout.component').then(m => m.CheckoutComponent)
+  },
+  // {
+  //   path: 'auth',
+  //   loadChildren: () => import('./public/auth/auth.routes').then(m => m.authRoutes)
+  // },
+  // {
+  //   path: 'account',
+  //   loadChildren: () => import('./public/account/account.routes').then(m => m.accountRoutes)
+  // },
   {
     path: 'admin',
     children: [
@@ -29,7 +66,7 @@ export const routes: Routes = [
       },
       {
         path: 'inventory',
-        component: DashboardComponent // Placeholder
+        component: InventoryComponent
       },
       {
         path: 'orders',
@@ -41,15 +78,15 @@ export const routes: Routes = [
       },
       {
         path: 'customers',
-        component: DashboardComponent // Placeholder
+        component: CustomersComponent
       },
       {
         path: 'sellers',
-        component: DashboardComponent // Placeholder
+        component: SellersComponent
       },
       {
         path: 'finance',
-        component: DashboardComponent // Placeholder
+        component: FinanceComponent
       },
       {
         path: 'reports',
@@ -92,6 +129,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/admin/dashboard'
+    redirectTo: '/home'
   }
 ];

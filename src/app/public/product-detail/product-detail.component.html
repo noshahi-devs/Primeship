@@ -1,0 +1,143 @@
+<div class="product-detail-container">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a class="breadcrumb-item" href="#">Home</a>
+      <a class="breadcrumb-item" href="#">Products</a>
+      <span class="breadcrumb-item active">{{ product?.name }}</span>
+    </nav>
+    
+    <div class="row">
+      <div class="col-md-6">
+        <div class="product-images">
+          <div class="main-image">
+            <img [src]="product?.image" [alt]="product?.name">
+          </div>
+          <div class="thumbnail-images">
+            <div class="thumbnail" *ngFor="let image of product?.images">
+              <img [src]="image" alt="Product thumbnail">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="product-info">
+          <h1 class="product-title">{{ product?.name }}</h1>
+          <div class="product-rating">
+            <span class="stars">★★★★☆</span>
+            <span class="rating-count">({{ product?.reviewCount }} reviews)</span>
+            <a href="#" class="write-review">Write a review</a>
+          </div>
+          
+          <div class="product-price">
+            <span class="current-price">${{ product?.price }}</span>
+            <span class="original-price" *ngIf="product?.originalPrice">${{ product?.originalPrice }}</span>
+            <span class="discount" *ngIf="product?.discount">{{ product?.discount }}% OFF</span>
+          </div>
+          
+          <div class="product-description">
+            <p>{{ product?.description }}</p>
+          </div>
+          
+          <div class="product-options">
+            <div class="option-group">
+              <label>Size:</label>
+              <div class="size-options">
+                <button class="btn btn-outline-primary btn-sm" *ngFor="let size of sizes">{{ size }}</button>
+              </div>
+            </div>
+            
+            <div class="option-group">
+              <label>Color:</label>
+              <div class="color-options">
+                <div class="color-option" *ngFor="let color of colors" 
+                     [style.backgroundColor]="color"></div>
+              </div>
+            </div>
+            
+            <div class="quantity-selector">
+              <label>Quantity:</label>
+              <div class="input-group">
+                <button class="btn btn-outline-secondary" (click)="decreaseQuantity()">-</button>
+                <input type="number" class="form-control" [(ngModel)]="quantity" min="1">
+                <button class="btn btn-outline-secondary" (click)="increaseQuantity()">+</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="product-actions">
+            <button class="btn btn-primary btn-lg" (click)="addToCart()">
+              <i class="fas fa-shopping-cart"></i> Add to Cart
+            </button>
+            <button class="btn btn-outline-danger btn-lg" (click)="addToWishlist()">
+              <i class="fas fa-heart"></i> Wishlist
+            </button>
+          </div>
+          
+          <div class="product-features">
+            <div class="feature">
+              <i class="fas fa-truck"></i>
+              <span>Free Shipping</span>
+            </div>
+            <div class="feature">
+              <i class="fas fa-undo"></i>
+              <span>30-Day Returns</span>
+            </div>
+            <div class="feature">
+              <i class="fas fa-shield-alt"></i>
+              <span>1-Year Warranty</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="row mt-5">
+      <div class="col-12">
+        <ul class="nav nav-tabs" id="productTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button">Description</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button">Specifications</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button">Reviews ({{ product?.reviewCount }})</button>
+          </li>
+        </ul>
+        <div class="tab-content" id="productTabsContent">
+          <div class="tab-pane fade show active" id="description" role="tabpanel">
+            <div class="product-description-full">
+              <h4>Product Description</h4>
+              <p>{{ product?.fullDescription }}</p>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="specifications" role="tabpanel">
+            <div class="product-specifications">
+              <h4>Specifications</h4>
+              <table class="table">
+                <tr *ngFor="let spec of product?.specifications">
+                  <td>{{ spec.key }}</td>
+                  <td>{{ spec.value }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="reviews" role="tabpanel">
+            <div class="product-reviews">
+              <h4>Customer Reviews</h4>
+              <div class="review" *ngFor="let review of reviews">
+                <div class="review-header">
+                  <strong>{{ review.author }}</strong>
+                  <span class="review-rating">★★★★☆</span>
+                  <span class="review-date">{{ review.date }}</span>
+                </div>
+                <p class="review-content">{{ review.content }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
