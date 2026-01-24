@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
 import { DashboardComponent } from './pages/admin/dashboard/dashboard.component';
 import { ProductsComponent } from './pages/admin/products/products.component';
-<<<<<<< HEAD
 import { SellerDashboardComponent } from './pages/seller/dashboard/seller-dashboard.component';
 import { SellerOrdersComponent } from './pages/seller/orders/orders.component';
-=======
->>>>>>> aa944bf74cee1f3d7d5ecf1ebb7d9c91a5e57314
 import { CategoriesComponent } from './pages/admin/categories/categories.component';
 import { OrdersComponent } from './pages/admin/orders/orders.component';
 import { ThreeplPartnersComponent } from './pages/admin/threepl-partners/threepl-partners.component';
@@ -13,6 +10,7 @@ import { InventoryComponent } from './pages/admin/inventory/inventory.component'
 import { CustomersComponent } from './pages/admin/customers/customers.component';
 import { SellersComponent } from './pages/admin/sellers/sellers.component';
 import { FinanceComponent } from './pages/admin/finance/finance.component';
+import { UsersComponent } from './pages/admin/users/users.component';
 import { HomeComponent } from './public/home/home.component';
 import { AuthGuard } from './core/guards/auth.guard';
 
@@ -108,7 +106,7 @@ export const routes: Routes = [
       },
       {
         path: 'users',
-        component: DashboardComponent // Placeholder
+        component: UsersComponent
       },
       {
         path: 'settings',
