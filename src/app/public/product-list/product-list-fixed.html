@@ -33,8 +33,8 @@
 
     <!-- Filters Section -->
     <div class="filters-section">
-      <div class="row">
-        <div class="col-md-3">
+      <div class="filters-row">
+        <div class="filter-item">
           <select class="form-select" formControlName="sortBy">
             <option value="featured">Sort by: Featured</option>
             <option value="price-low">Price: Low to High</option>
@@ -43,7 +43,7 @@
             <option value="rating">Best Rating</option>
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="filter-item">
           <select class="form-select" formControlName="category">
             <option value="">All Categories</option>
             <option value="electronics">Electronics</option>
@@ -54,16 +54,23 @@
             <option value="accessories">Accessories</option>
           </select>
         </div>
-        <div class="col-md-3">
+        <div class="filter-item">
           <div class="price-range">
             <input type="number" class="form-control" placeholder="Min Price" formControlName="minPrice">
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="filter-item">
           <div class="price-range">
-    <div class="row">
+            <input type="number" class="form-control" placeholder="Max Price" formControlName="maxPrice">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Layout -->
+    <div class="main-content-layout">
       <!-- Left Sidebar -->
-      <div class="col-md-3">
+      <div class="left-sidebar">
         <div class="sidebar-filters">
           <!-- Categories Section -->
           <h5>Categories</h5>
@@ -185,7 +192,7 @@
       </div>
 
       <!-- Main Body - Category Related Products -->
-      <div class="col-md-9">
+      <div class="main-content">
         <!-- Category Title Section -->
         <div class="category-title-section" *ngIf="categoryTitle">
           <div class="category-header-content">
@@ -229,6 +236,12 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Pagination Info -->
+        <div class="pagination-info">
+          <span class="page-info">Page 1 of 3</span>
+          <span class="total-items">24 Products</span>
         </div>
 
         <!-- Pagination -->

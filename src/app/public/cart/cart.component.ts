@@ -16,7 +16,7 @@ export interface CartItem {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.scss']
+  styleUrls: ['./cart.component.scss', 'cart-complete.scss']
 })
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
@@ -46,7 +46,7 @@ export class CartComponent implements OnInit {
           name: 'Premium Wireless Headphones',
           price: 299,
           originalPrice: 399,
-          image: 'https://via.placeholder.com/100'
+          image: 'https://picsum.photos/seed/headphones/300/300.jpg'
         },
         quantity: 1,
         size: 'M',
@@ -58,11 +58,35 @@ export class CartComponent implements OnInit {
           name: 'Smart Watch',
           price: 199,
           originalPrice: 249,
-          image: 'https://via.placeholder.com/100'
+          image: 'https://picsum.photos/seed/smartwatch/300/300.jpg'
         },
         quantity: 2,
         size: 'L',
         color: 'Silver'
+      },
+      {
+        product: {
+          id: 'prod-3',
+          name: 'Laptop Backpack',
+          price: 79,
+          originalPrice: 99,
+          image: 'https://picsum.photos/seed/backpack/300/300.jpg'
+        },
+        quantity: 1,
+        size: 'One Size',
+        color: 'Navy Blue'
+      },
+      {
+        product: {
+          id: 'prod-4',
+          name: 'Wireless Mouse',
+          price: 49,
+          originalPrice: 69,
+          image: 'https://picsum.photos/seed/mouse/300/300.jpg'
+        },
+        quantity: 1,
+        size: 'Standard',
+        color: 'Black'
       }
     ];
   }
@@ -95,6 +119,21 @@ export class CartComponent implements OnInit {
     } else {
       alert('Invalid promo code');
     }
+  }
+
+  proceedToCheckout(): void {
+    // Store cart data in sessionStorage for checkout page
+    sessionStorage.setItem('cartData', JSON.stringify({
+      items: this.cartItems,
+      subtotal: this.subtotal,
+      shipping: this.shipping,
+      tax: this.tax,
+      discount: this.discount,
+      total: this.total
+    }));
+    
+    // Navigate to checkout page
+    this.router.navigate(['/checkout']);
   }
 
   private calculateTotals(): void {
