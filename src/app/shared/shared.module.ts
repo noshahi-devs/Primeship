@@ -7,6 +7,7 @@ import { CarouselModule } from 'primeng/carousel';
 import { FormsModule } from '@angular/forms';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { PriceComponent } from './components/price/price.component';
+import { Product3DViewerComponent } from './components/product-3d-viewer/product-3d-viewer.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { PriceComponent } from './components/price/price.component';
     ButtonModule,
     RatingModule,
     CarouselModule,
-    FormsModule
+    FormsModule,
+    Product3DViewerComponent
   ],
   exports: [
     CommonModule,
@@ -29,7 +31,8 @@ import { PriceComponent } from './components/price/price.component';
     CarouselModule,
     FormsModule,
     ProductCardComponent,
-    PriceComponent
+    PriceComponent,
+    Product3DViewerComponent
   ]
 })
 export class SharedModule { }
