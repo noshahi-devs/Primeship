@@ -72,12 +72,12 @@
         <div class="products-grid">
           <div class="row">
             <div class="col-md-4 col-sm-6 mb-4" *ngFor="let product of products">
-              <div class="product-card">
+              <div class="product-card" (click)="onProductClick(product)">
                 <div class="product-image">
                   <img [src]="product.image" [alt]="product.name">
                   <div class="product-actions">
-                    <button class="btn btn-sm btn-outline-primary">Quick View</button>
-                    <button class="btn btn-sm btn-outline-danger">Wishlist</button>
+                    <button class="btn btn-sm btn-outline-primary" (click)="$event.stopPropagation()">Quick View</button>
+                    <button class="btn btn-sm btn-outline-danger" (click)="$event.stopPropagation()">Wishlist</button>
                   </div>
                 </div>
                 <div class="product-info">
@@ -91,7 +91,7 @@
                     <span class="stars">★★★★☆</span>
                     <span class="rating-count">({{ product.reviewCount }})</span>
                   </div>
-                  <button class="btn btn-primary btn-sm w-100">Add to Cart</button>
+                  <button class="btn btn-primary btn-sm w-100" (click)="$event.stopPropagation()">Add to Cart</button>
                 </div>
               </div>
             </div>

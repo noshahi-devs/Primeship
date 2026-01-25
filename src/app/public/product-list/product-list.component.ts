@@ -3,10 +3,13 @@ import { ProductService } from '../../core/services';
 import { Product } from '../../core/models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-product-list',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss']
 })

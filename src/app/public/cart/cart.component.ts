@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 export interface CartItem {
   product: any;
@@ -11,7 +13,8 @@ export interface CartItem {
 
 @Component({
   selector: 'app-cart',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.scss']
 })

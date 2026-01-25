@@ -105,18 +105,18 @@
             </div>
 
             <div class="products-grid-3d">
-                <div class="pro-card-premium" *ngFor="let product of visibleFeaturedProducts">
+                <div class="pro-card-premium" *ngFor="let product of visibleFeaturedProducts" (click)="onProductSelected(product)">
                     <div class="pro-img-box">
                         <img [src]="product.image" [alt]="product.name">
                         <span class="badge-tag">-{{ product.discount }}% OFF</span>
 
                         <div class="pro-actions-overlay">
-                            <button class="btn-circle" title="Add to Wishlist"><i class="pi pi-heart"></i></button>
-                            <button class="btn-circle" title="Add to Cart"><i class="pi pi-shopping-bag"></i></button>
-                            <button class="btn-circle" title="Quick View"><i class="pi pi-eye"></i></button>
+                            <button class="btn-circle" title="Add to Wishlist" (click)="$event.stopPropagation()"><i class="pi pi-heart"></i></button>
+                            <button class="btn-circle" title="Add to Cart" (click)="$event.stopPropagation()"><i class="pi pi-shopping-bag"></i></button>
+                            <button class="btn-circle" title="Quick View" (click)="$event.stopPropagation()"><i class="pi pi-eye"></i></button>
                         </div>
                     </div>
-                    <div class="pro-info" (click)="onProductSelected(product)">
+                    <div class="pro-info">
                         <span class="category-label">{{ product.category }}</span>
                         <h3>{{ product.name }}</h3>
                         <div class="price-row">
@@ -186,14 +186,14 @@
             </div>
 
             <div class="products-grid-3d">
-                <div class="pro-card-premium" *ngFor="let product of visibleLatestProducts">
+                <div class="pro-card-premium" *ngFor="let product of visibleLatestProducts" (click)="onProductSelected(product)">
                     <div class="pro-img-box">
                         <img [src]="product.image" [alt]="product.name">
                         <div class="pro-actions-overlay">
-                            <button class="btn-circle"><i class="pi pi-shopping-bag"></i></button>
+                            <button class="btn-circle" (click)="$event.stopPropagation()"><i class="pi pi-shopping-bag"></i></button>
                         </div>
                     </div>
-                    <div class="pro-info" (click)="onProductSelected(product)">
+                    <div class="pro-info">
                         <span class="category-label">PRIME SELECTION</span>
                         <h3>{{ product.name }}</h3>
                         <div class="price-row">
