@@ -7,6 +7,9 @@ import { PublicService } from '../../core/services/public.service';
 import { ProductService, ProductDto } from '../../core/services/product.service';
 import { Product3DViewerComponent } from '../../shared/components/product-3d-viewer/product-3d-viewer.component';
 import { Product } from '../../core/models';
+import { AuthService } from '../../core/services/auth.service';
+import { CartService } from '../../core/services/cart.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -86,6 +89,9 @@ export class ProductDetailComponent implements OnInit {
     private router: Router,
     private publicService: PublicService,
     private productService: ProductService,
+    private authService: AuthService,
+    private cartService: CartService,
+    private toastService: ToastService,
     private fb: FormBuilder
   ) { }
 
@@ -198,14 +204,15 @@ export class ProductDetailComponent implements OnInit {
   }
 
   addToCart(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.toastService.showInfo('Please login to add items to cart');
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
     if (this.product) {
-      console.log('Adding to cart:', {
-        product: this.product,
-        quantity: this.quantity,
-        size: this.selectedSize,
-        color: this.selectedColor
-      });
-      alert('Product added to cart!');
+      this.cartService.addToCart(this.product, this.quantity, this.selectedSize, this.selectedColor);
+      this.toastService.showSuccess(`${this.product.name} added to cart!`);
     }
   }
 
@@ -243,6 +250,29 @@ export class ProductDetailComponent implements OnInit {
   selectImage(product: Product, imageIndex: number): void {
     if (product.images && product.images[imageIndex]) {
       product.image = product.images[imageIndex];
+    }
+  }
+
+  buyNow(): void {
+    if (this.product) {
+      console.log('Buying now:', {
+        product: this.product,
+        quantity: this.quantity,
+        size: this.selectedSize,
+        color: this.selectedColor
+      });
+
+      // Implement buy now logic - usually adds to cart and redirects to checkout
+      this.addToCart();
+      this.router.navigate(['/checkout']);
+    }
+  }
+
+  onRelatedProductClick(product: any): void {
+    if (product && product.slug) {
+      this.router.navigate(['/product', product.slug]);
+      // Scroll to top when navigating to a new product
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 }

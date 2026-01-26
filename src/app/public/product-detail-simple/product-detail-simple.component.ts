@@ -2,13 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { Product } from '../../core/models';
 
 @Component({
   selector: 'app-product-detail-simple',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './product-detail-simple.component.html',
   styleUrls: ['./product-detail-simple.component.scss']
 })
@@ -21,7 +20,7 @@ export class ProductDetailSimpleComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProduct();
@@ -30,7 +29,7 @@ export class ProductDetailSimpleComponent implements OnInit {
 
   private loadProduct(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
-    
+
     // TODO: Replace with actual API call
     this.product = {
       id: 'prod-1',
@@ -47,7 +46,7 @@ export class ProductDetailSimpleComponent implements OnInit {
       description: 'Premium wireless headphones with noise cancellation and superior sound quality.',
       fullDescription: 'Experience premium sound quality with our wireless headphones. Featuring advanced noise cancellation technology, 30-hour battery life, and comfortable over-ear design.'
     };
-    
+
     this.isLoading = false;
   }
 
@@ -115,10 +114,10 @@ export class ProductDetailSimpleComponent implements OnInit {
         product: this.product,
         quantity: this.quantity
       });
-      
+
       // Navigate to checkout
-      this.router.navigate(['/checkout'], { 
-        queryParams: { 
+      this.router.navigate(['/checkout'], {
+        queryParams: {
           productId: this.product.id,
           quantity: this.quantity
         }
