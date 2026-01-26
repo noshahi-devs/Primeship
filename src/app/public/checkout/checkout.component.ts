@@ -41,25 +41,37 @@ export class CheckoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadCartItems();
-    this.calculateTotals();
+    this.loadCartData();
   }
 
-  private loadCartItems(): void {
-    // TODO: Replace with actual cart service
-    this.cartItems = [
-      {
-        product: {
-          id: 'prod-1',
-          name: 'Premium Wireless Headphones',
-          price: 299,
-          image: 'https://via.placeholder.com/100'
-        },
-        quantity: 1,
-        size: 'M',
-        color: 'Black'
-      }
-    ];
+  private loadCartData(): void {
+    // Load cart data from sessionStorage
+    const cartData = sessionStorage.getItem('cartData');
+    if (cartData) {
+      const data = JSON.parse(cartData);
+      this.cartItems = data.items || [];
+      this.subtotal = data.subtotal || 0;
+      this.shipping = data.shipping || 0;
+      this.tax = data.tax || 0;
+      this.total = data.total || 0;
+    } else {
+      // Fallback data if no cart data found
+      this.cartItems = [
+        {
+          product: {
+            id: 'prod-1',
+            name: 'Premium Wireless Headphones',
+            price: 299,
+            originalPrice: 399,
+            image: 'https://picsum.photos/seed/headphones/300/300.jpg'
+          },
+          quantity: 1,
+          size: 'M',
+          color: 'Black'
+        }
+      ];
+      this.calculateTotals();
+    }
   }
 
   private calculateTotals(): void {
