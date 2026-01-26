@@ -245,4 +245,27 @@ export class ProductDetailComponent implements OnInit {
       product.image = product.images[imageIndex];
     }
   }
+
+  buyNow(): void {
+    if (this.product) {
+      console.log('Buying now:', {
+        product: this.product,
+        quantity: this.quantity,
+        size: this.selectedSize,
+        color: this.selectedColor
+      });
+
+      // Implement buy now logic - usually adds to cart and redirects to checkout
+      this.addToCart();
+      this.router.navigate(['/checkout']);
+    }
+  }
+
+  onRelatedProductClick(product: any): void {
+    if (product && product.slug) {
+      this.router.navigate(['/product', product.slug]);
+      // Scroll to top when navigating to a new product
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
 }
