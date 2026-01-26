@@ -128,7 +128,7 @@ import { CommonModule } from '@angular/common';
         <nav class="main-nav">
           <div class="nav-container">
             <div class="nav-content">
-              <button class="nav-categories">
+              <button class="nav-categories" routerLink="/categories">
                 <i class="pi pi-th-large"></i>
                 <span>All Categories</span>
                 <i class="pi pi-chevron-down"></i>
@@ -142,20 +142,20 @@ import { CommonModule } from '@angular/common';
                   </a>
                 </li>
                 <li class="nav-menu-item hot">
-                  <a href="#" class="nav-menu-link">
+                  <a routerLink="/shop" class="nav-menu-link">
                     <i class="pi pi-bolt"></i>
                     Flash Deals
                     <span class="hot-badge">HOT</span>
                   </a>
                 </li>
                 <li class="nav-menu-item">
-                  <a href="#" class="nav-menu-link">
+                  <a routerLink="/shop" class="nav-menu-link">
                     <i class="pi pi-star"></i>
                     New Arrivals
                   </a>
                 </li>
                 <li class="nav-menu-item">
-                  <a href="#" class="nav-menu-link">
+                  <a routerLink="/shop" class="nav-menu-link">
                     <i class="pi pi-chart-line"></i>
                     Best Sellers
                   </a>
@@ -194,9 +194,9 @@ import { CommonModule } from '@angular/common';
             <div class="footer-col">
               <h6 class="footer-heading">Shop</h6>
               <ul class="footer-links">
-                <li><a routerLink="/products/electronics">Electronics</a></li>
-                <li><a routerLink="/products/fashion">Fashion</a></li>
-                <li><a routerLink="/products/home">Home & Living</a></li>
+                <li><a routerLink="/category/electronics">Electronics</a></li>
+                <li><a routerLink="/category/fashion">Fashion</a></li>
+                <li><a routerLink="/category/home-living">Home & Living</a></li>
               </ul>
             </div>
             <div class="footer-col">

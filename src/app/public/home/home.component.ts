@@ -2,8 +2,33 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { ProductService } from '../../core/services';
-import { Category, Product } from '../../core/models';
+import { PublicService } from '../../core/services/public.service';
+import { CategoryDto } from '../../core/services/category.service';
+import { ProductService, ProductDto } from '../../core/services/product.service';
+
+// Temporary interface for compatibility with existing template
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  slug: string;
+  price: number;
+  originalPrice: number;
+  discount: number;
+  rating: number;
+  reviewCount: number;
+  image: string;
+  inStock: boolean;
+  isFeatured?: boolean;
+  isNew?: boolean;
+}
 
 @Component({
   selector: 'app-home',
@@ -12,6 +37,7 @@ import { Category, Product } from '../../core/models';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
+
 export class HomeComponent implements OnInit {
   categories: Category[] = [];
   featuredProducts: Product[] = [];
@@ -25,15 +51,16 @@ export class HomeComponent implements OnInit {
   readonly PRODUCTS_PER_LOAD = 8;
 
   constructor(
+    private publicService: PublicService,
     private productService: ProductService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
+    console.log('🏠 HomeComponent initialized');
     this.startCountdown();
     this.loadCategories();
-    this.loadFeaturedProducts();
-    this.loadLatestProducts();
+    this.loadProducts();
   }
 
   private startCountdown() {
@@ -55,7 +82,113 @@ export class HomeComponent implements OnInit {
   }
 
   private loadCategories(): void {
-    // High-end categorized imagery from existing assets & unsplash mix
+    console.log('📥 Loading categories from Public API...');
+
+    this.publicService.getCategories().subscribe({
+      next: (categories: CategoryDto[]) => {
+        console.log('✅ Categories loaded:', categories.length);
+
+        // Convert CategoryDto to Category for template compatibility
+        this.categories = categories
+          .slice(0, 6) // Show first 6 categories
+          .map(c => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            image: c.imageUrl || this.getDefaultCategoryImage(c.name)
+          }));
+
+        console.log('✅ Categories formatted for display:', this.categories.length);
+      },
+      error: (error) => {
+        console.error('❌ Error loading categories:', error);
+        // Fallback to default categories if API fails
+        this.loadDefaultCategories();
+      }
+    });
+  }
+
+  private loadProducts(): void {
+    console.log('📥 Loading products from Public API...');
+
+    this.publicService.getProducts().subscribe({
+      next: (products: ProductDto[]) => {
+        console.log('✅ Products loaded:', products.length);
+
+        // Convert ProductDto to Product for template compatibility
+        const convertedProducts = products
+          .map(p => this.convertProductDto(p));
+
+        // Split into featured and latest
+        this.featuredProducts = convertedProducts.slice(0, 20); // First 20 as featured
+        this.latestProducts = convertedProducts.slice(0, 20).reverse(); // Reverse for latest
+
+        this.isLoading = false;
+        console.log('✅ Products formatted - Featured:', this.featuredProducts.length, 'Latest:', this.latestProducts.length);
+      },
+      error: (error) => {
+        console.error('❌ Error loading products:', error);
+        this.isLoading = false;
+        // Fallback to default products if API fails
+        this.loadDefaultProducts();
+      }
+    });
+  }
+
+  private convertProductDto(dto: ProductDto): Product {
+    // Parse images
+    const images = this.productService.parseImages(dto.images);
+    const firstImage = images.length > 0 ? images[0] : this.getDefaultProductImage();
+
+    // Calculate discount percentage
+    const discount = dto.discountPercentage || 0;
+    const originalPrice = dto.resellerMaxPrice;
+    const price = originalPrice - (originalPrice * discount / 100);
+
+    return {
+      id: dto.id,
+      name: dto.name,
+      category: dto.categoryName || 'General',
+      slug: dto.slug,
+      price: price,
+      originalPrice: originalPrice,
+      discount: discount,
+      rating: 4.5, // Default rating
+      reviewCount: Math.floor(Math.random() * 500) + 100, // Random review count
+      image: firstImage,
+      inStock: dto.stockQuantity > 0,
+      isFeatured: true,
+      isNew: true
+    };
+  }
+
+  private getDefaultCategoryImage(categoryName: string): string {
+    // Default images based on category name
+    const defaults: { [key: string]: string } = {
+      'Electronics': 'assets/images/61+DG4Np+zL._AC_SX425_.jpg',
+      'Fashion': 'assets/images/71NpF4JP7HL._AC_SY879_.jpg',
+      'Beauty': 'assets/images/81BrD6Y4ieL._AC_SX425_.jpg',
+      'Home': 'assets/images/81jgetrp87L._AC_SX679_.jpg',
+      'Sports': 'assets/images/81ec6uY7eML._AC_SX425_.jpg',
+      'Accessories': 'assets/images/61BKAbqOL5L._AC_SX679_.jpg'
+    };
+
+    // Try to match category name
+    for (const key in defaults) {
+      if (categoryName.toLowerCase().includes(key.toLowerCase())) {
+        return defaults[key];
+      }
+    }
+
+    return 'assets/images/placeholder.jpg';
+  }
+
+  private getDefaultProductImage(): string {
+    return 'https://via.placeholder.com/400x400?text=No+Image';
+  }
+
+  private loadDefaultCategories(): void {
+    console.log('⚠️ Using default categories as fallback');
     this.categories = [
       { id: '1', name: 'Electronics', slug: 'electronics', image: 'assets/images/61+DG4Np+zL._AC_SX425_.jpg' },
       { id: '2', name: 'Fashion', slug: 'fashion', image: 'assets/images/71NpF4JP7HL._AC_SY879_.jpg' },
@@ -66,7 +199,8 @@ export class HomeComponent implements OnInit {
     ];
   }
 
-  private loadFeaturedProducts(): void {
+  private loadDefaultProducts(): void {
+    console.log('⚠️ Using default products as fallback');
     const assetImages = [
       'assets/images/91NNZo3825L._AC_SX679_.jpg',
       'assets/images/91P2724BW3L._AC_SX679_.jpg',
@@ -79,66 +213,22 @@ export class HomeComponent implements OnInit {
     const proNames = ['Aura Wireless Pro', 'Eclipse Smartwatch', 'Urban Explorer Tote', 'Velvet Matt Lipstick', 'Nordic Desk Lamp', 'Prime Fit Sneakers'];
     const proCats = ['Electronics', 'Electronics', 'Fashion', 'Beauty', 'Home Living', 'Activewear'];
 
-    // Generate more products to simulate large inventory
-    const allProducts: Product[] = [];
-    for (let batch = 0; batch < 20; batch++) {
-      proNames.forEach((name, i) => {
-        allProducts.push({
-          id: `feat-${batch}-${i + 1}`,
-          name: `${name} ${batch > 0 ? 'Series ' + batch : ''}`,
-          category: proCats[i] as any,
-          slug: `${name.toLowerCase().replace(/ /g, '-')}-${batch}-${i}`,
-          price: [299, 199, 89, 29, 149, 120][i] + (batch * 10),
-          originalPrice: [399, 249, 120, 45, 199, 150][i] + (batch * 10),
-          discount: Math.floor(Math.random() * 20) + 10,
-          rating: 4.8,
-          reviewCount: 1240,
-          image: assetImages[i] || 'assets/images/placeholder.jpg',
-          inStock: true,
-          isFeatured: true
-        });
-      });
-    }
+    this.featuredProducts = proNames.map((name, i) => ({
+      id: `feat-${i + 1}`,
+      name: name,
+      category: proCats[i],
+      slug: name.toLowerCase().replace(/ /g, '-'),
+      price: [299, 199, 89, 29, 149, 120][i],
+      originalPrice: [399, 249, 120, 45, 199, 150][i],
+      discount: Math.floor(Math.random() * 20) + 10,
+      rating: 4.8,
+      reviewCount: 1240,
+      image: assetImages[i] || 'assets/images/placeholder.jpg',
+      inStock: true,
+      isFeatured: true
+    }));
 
-    this.featuredProducts = allProducts;
-  }
-
-  private loadLatestProducts(): void {
-    // Mix of latest product images from assets
-    const latestImages = [
-      'assets/images/71Xa0fzUiGL._AC_SX679_.jpg',
-      'assets/images/71buRMyGhJL._AC_SY300_SX300_QL70_FMwebp_.webp',
-      'assets/images/71dY1KlUS3L._AC_SX679_.jpg',
-      'assets/images/71fJxIg1yZL._AC_SX569_.jpg',
-      'assets/images/81ViBxtYFoL._AC_SX569_.jpg',
-      'assets/images/81j8RchuiLL._AC_SX679_.jpg',
-      'assets/images/81mBRjySIxL._AC_SY300_SX300_QL70_FMwebp_.webp',
-      'assets/images/81yZQ8q7-IL._AC_SY300_SX300_QL70_FMwebp_.webp'
-    ];
-
-    // Generate more products
-    const allLatest: Product[] = [];
-    for (let batch = 0; batch < 15; batch++) {
-      latestImages.forEach((img, i) => {
-        allLatest.push({
-          id: `latest-${batch}-${i + 1}`,
-          name: `Premium Selection ${batch * 8 + i + 1}`,
-          category: 'Exquisite' as any,
-          slug: `exquisite-product-${batch}-${i + 1}`,
-          price: Math.floor(Math.random() * 500) + 50,
-          originalPrice: Math.floor(Math.random() * 700) + 100,
-          discount: 15,
-          rating: 4.5,
-          reviewCount: 300,
-          image: img,
-          inStock: true,
-          isNew: true
-        });
-      });
-    }
-
-    this.latestProducts = allLatest;
-    this.isLoading = false;
+    this.latestProducts = [...this.featuredProducts];
   }
 
   get visibleFeaturedProducts(): Product[] {
@@ -166,10 +256,12 @@ export class HomeComponent implements OnInit {
   }
 
   onCategorySelected(category: Category): void {
+    console.log('📂 Category selected:', category.name);
     this.router.navigate(['/category', category.slug]);
   }
 
   onProductSelected(product: Product): void {
+    console.log('📦 Product selected:', product.name);
     this.router.navigate(['/product', product.slug]);
   }
 }

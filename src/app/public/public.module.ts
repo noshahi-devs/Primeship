@@ -6,31 +6,35 @@ import { AuthGuard } from '../core/guards/auth.guard';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 const routes: Routes = [
-  { 
-    path: '', 
+  {
+    path: '',
     loadComponent: () => import('./home/home.component').then(m => m.HomeComponent),
-    pathMatch: 'full' 
+    pathMatch: 'full'
   },
-  { 
-    path: 'category/:slug', 
+  {
+    path: 'categories',
+    loadComponent: () => import('./category-list/category-list.component').then(m => m.CategoryListComponent)
+  },
+  {
+    path: 'category/:slug',
     loadComponent: () => import('./product-list/product-list.component').then(m => m.ProductListComponent)
   },
-  { 
-    path: 'product/:slug', 
+  {
+    path: 'product/:slug',
     loadComponent: () => import('./product-detail/product-detail.component').then(m => m.ProductDetailComponent)
   },
-  { 
-    path: 'product-simple/:slug', 
+  {
+    path: 'product-simple/:slug',
     loadComponent: () => import('./product-detail-simple/product-detail-simple.component').then(m => m.ProductDetailSimpleComponent)
   },
-  { 
-    path: 'cart', 
+  {
+    path: 'cart',
     loadComponent: () => import('./cart/cart.component').then(m => m.CartComponent)
   },
-  { 
-    path: 'checkout', 
+  {
+    path: 'checkout',
     loadComponent: () => import('./checkout/checkout.component').then(m => m.CheckoutComponent),
-    canActivate: [AuthGuard] 
+    canActivate: [AuthGuard]
   }
 ];
 

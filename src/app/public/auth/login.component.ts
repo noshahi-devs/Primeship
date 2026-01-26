@@ -13,7 +13,7 @@ import { ToastService } from '../../core/services/toast.service';
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
-  returnUrl: string = '/seller/dashboard';
+  returnUrl: string = '/admin/dashboard';
 
   constructor(
     private fb: FormBuilder,
@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
     console.log('🔄 ngOnInit called');
 
     // Get return URL from route parameters or default to seller dashboard
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/seller/dashboard';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
     console.log('📍 Return URL set to:', this.returnUrl);
 
     // If already logged in, redirect to return URL

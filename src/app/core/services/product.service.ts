@@ -1,93 +1,247 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { Product } from '../models/product.model';
-import { Category } from '../models/category.model';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+
+export interface ProductDto {
+  id: string;
+  name: string;
+  supplierId?: number;
+  categoryId: string;
+  categoryName: string;
+  description: string;
+  images: any; // JSON string or parsed array
+  sizeOptions: string; // JSON string
+  colorOptions: string; // JSON string
+  discountPercentage: number;
+  supplierPrice: number;
+  resellerMaxPrice: number;
+  stockQuantity: number;
+  sku: string;
+  brandName: string;
+  slug: string;
+  status: boolean;
+
+  // Template compatibility properties (computed/aliases) - always populated
+  category: string; // Alias for categoryName
+  price: number; // Computed from resellerMaxPrice
+  discountPrice: number; // Computed from discount
+  stock: number; // Alias for stockQuantity
+  featured: boolean; // Not in backend model
+  metaTitle: string; // Not in backend model
+  metaDescription: string; // Not in backend model
+  createdAt: Date; // Not in backend model
+}
+
+
+export interface CreateProductDto {
+  name: string;
+  categoryId: string;
+  description?: string;
+  images?: string;
+  sizeOptions?: string;
+  colorOptions?: string;
+  discountPercentage?: number;
+  supplierPrice: number;
+  resellerMaxPrice: number;
+  stockQuantity: number;
+  sku: string;
+  brandName?: string;
+  slug?: string;
+  status: boolean;
+}
+
+export interface UpdateProductDto {
+  id: string;
+  name: string;
+  categoryId: string;
+  description?: string;
+  images?: string;
+  sizeOptions?: string;
+  colorOptions?: string;
+  discountPercentage?: number;
+  supplierPrice: number;
+  resellerMaxPrice: number;
+  stockQuantity: number;
+  sku: string;
+  brandName?: string;
+  slug?: string;
+  status: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  
-  constructor() { }
+  private apiUrl = 'https://localhost:44311/api/services/app/Product';
+  private tenantId = '2'; // Prime Ship Tenant
 
-  getProducts(): Observable<Product[]> {
-    // TODO: Replace with actual API call
-    const products: Product[] = Array(20).fill(0).map((_, i) => ({
-      id: `prod-${i + 1}`,
-      name: `Product ${i + 1}`,
-      slug: `product-${i + 1}`,
-      price: Math.floor(Math.random() * 900) + 100,
-      originalPrice: Math.floor(Math.random() * 1200) + 100,
-      discount: Math.floor(Math.random() * 40) + 10,
-      rating: Math.floor(Math.random() * 3) + 2,
-      reviewCount: Math.floor(Math.random() * 1000),
-      image: 'https://via.placeholder.com/200',
-      inStock: true,
-      category: ['electronics', 'fashion', 'home', 'beauty'][Math.floor(Math.random() * 4)]
-    }));
-    
-    return of(products);
+  constructor(private http: HttpClient) { }
+
+  /**
+   * Get all products
+   */
+  getAll(): Observable<ProductDto[]> {
+    return this.http.get<any>(this.apiUrl + '/GetAll', {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.result.items || [])
+    );
   }
 
-  getProductBySlug(slug: string): Observable<Product | null> {
-    // TODO: Replace with actual API call
-    const product: Product = {
-      id: 'prod-1',
-      name: 'Premium Product',
-      slug: slug,
-      price: 299,
-      originalPrice: 399,
-      discount: 25,
-      rating: 4,
-      reviewCount: 245,
-      image: 'https://via.placeholder.com/400',
-      images: [
-        'https://via.placeholder.com/400',
-        'https://via.placeholder.com/400',
-        'https://via.placeholder.com/400'
-      ],
-      inStock: true,
-      description: 'Premium product description',
-      fullDescription: 'Detailed product description with all features and benefits.',
-      specifications: [
-        { key: 'Brand', value: 'PremiumBrand' },
-        { key: 'Model', value: 'PRO-001' }
-      ]
-    };
-    
-    return of(product);
+  /**
+   * Get products by category
+   */
+  getByCategory(categoryId: string): Observable<ProductDto[]> {
+    return this.http.get<any>(`${this.apiUrl}/GetByCategory?categoryId=${categoryId}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.result.items || [])
+    );
   }
 
-  getProductsByCategory(categorySlug: string): Observable<Product[]> {
-    // TODO: Replace with actual API call
-    return this.getProducts();
+  /**
+   * Get product by ID
+   */
+  get(id: string): Observable<ProductDto> {
+    return this.http.get<any>(`${this.apiUrl}/Get?id=${id}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.result)
+    );
   }
 
-  getFeaturedProducts(): Observable<Product[]> {
-    // TODO: Replace with actual API call
-    return this.getProducts();
+  /**
+   * Create new product
+   */
+  create(input: CreateProductDto): Observable<ProductDto> {
+    // Auto-generate slug if not provided
+    if (!input.slug) {
+      input.slug = this.generateSlug(input.name);
+    }
+
+    return this.http.post<any>(this.apiUrl + '/Create', input, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.result)
+    );
   }
 
-  getLatestProducts(): Observable<Product[]> {
-    // TODO: Replace with actual API call
-    return this.getProducts();
+  /**
+   * Update existing product
+   */
+  update(input: UpdateProductDto): Observable<ProductDto> {
+    // Auto-generate slug if not provided
+    if (!input.slug) {
+      input.slug = this.generateSlug(input.name);
+    }
+
+    return this.http.put<any>(this.apiUrl + '/Update', input, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.result)
+    );
   }
 
-  searchProducts(query: string): Observable<Product[]> {
-    // TODO: Replace with actual API call
-    return this.getProducts();
+  /**
+   * Delete product
+   */
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/Delete?id=${id}`, {
+      headers: this.getHeaders()
+    });
   }
 
-  getCategories(): Observable<Category[]> {
-    // TODO: Replace with actual API call
-    const categories: Category[] = [
-      { id: '1', name: 'Electronics', slug: 'electronics', image: 'assets/images/categories/electronics.jpg' },
-      { id: '2', name: 'Fashion', slug: 'fashion', image: 'assets/images/categories/fashion.jpg' },
-      { id: '3', name: 'Home & Living', slug: 'home-living', image: 'assets/images/categories/home.jpg' },
-      { id: '4', name: 'Beauty', slug: 'beauty', image: 'assets/images/categories/beauty.jpg' },
-      { id: '5', name: 'Sports', slug: 'sports', image: 'assets/images/categories/sports.jpg' }
-    ];
-    
-    return of(categories);
+  /**
+   * Parse images JSON string to array
+   */
+  parseImages(imagesJson: any): string[] {
+    if (!imagesJson) return [];
+
+    // If it's already an array, return it
+    if (Array.isArray(imagesJson)) return imagesJson;
+
+    // If it's not a string, we can't parse it
+    if (typeof imagesJson !== 'string') return [];
+
+    try {
+      const parsed = JSON.parse(imagesJson);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      // If parsing fails, check if it's a single image string (like base64 or URL)
+      if (imagesJson.startsWith('data:image') || imagesJson.startsWith('http')) {
+        return [imagesJson];
+      }
+      // Or maybe comma separated?
+      if (imagesJson.includes(',')) {
+        return imagesJson.split(',').map(img => img.trim());
+      }
+      return [imagesJson];
+    }
+  }
+
+  /**
+   * Parse size options JSON string to array
+   */
+  parseSizeOptions(sizeOptionsJson: string): string[] {
+    try {
+      return JSON.parse(sizeOptionsJson || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Parse color options JSON string to array
+   */
+  parseColorOptions(colorOptionsJson: string): string[] {
+    try {
+      return JSON.parse(colorOptionsJson || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Convert array to JSON string for images
+   */
+  stringifyImages(images: string[]): string {
+    return JSON.stringify(images);
+  }
+
+  /**
+   * Convert array to JSON string for size options
+   */
+  stringifySizeOptions(sizes: string[]): string {
+    return JSON.stringify(sizes);
+  }
+
+  /**
+   * Convert array to JSON string for color options
+   */
+  stringifyColorOptions(colors: string[]): string {
+    return JSON.stringify(colors);
+  }
+
+  /**
+   * Generate slug from name
+   */
+  public generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  /**
+   * Get headers with tenant ID and auth token
+   */
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Abp-TenantId': this.tenantId,
+      'Authorization': `Bearer ${token}`
+    });
   }
 }

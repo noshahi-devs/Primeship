@@ -29,6 +29,7 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
 
 @mixin card-shadow {
   box-shadow: 0 4px 6px -1px $shadow-light, 0 2px 4px -1px $shadow-light;
+
   &:hover {
     box-shadow: 0 10px 15px -3px $shadow-medium, 0 4px 6px -2px $shadow-light;
   }
@@ -688,6 +689,13 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
                 box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
               }
 
+              &.readonly-input {
+                background-color: #f3f4f6;
+                color: #4b5563;
+                cursor: not-allowed;
+                border-style: dashed;
+              }
+
               &::placeholder {
                 color: $text-light;
               }
@@ -742,17 +750,28 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
             background: $bg-white;
             margin-bottom: 1.5rem;
 
-            &.dragover {
+            &.dragover,
+            &:focus {
               border-color: $primary-color;
               background: rgba($primary-color, 0.05);
+              outline: none;
             }
 
             .upload-placeholder {
+              cursor: pointer;
+
               i {
                 font-size: 3rem;
                 color: $text-light;
                 margin-bottom: 1rem;
                 opacity: 0.5;
+                @include transition();
+              }
+
+              &:hover i {
+                color: $primary-color;
+                opacity: 0.8;
+                transform: scale(1.1);
               }
 
               p {
@@ -844,26 +863,12 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
 
             .upload-progress {
               margin-top: 1rem;
-              text-align: center;
+              @include flex-center(center, center, 0.5rem);
+              color: $primary-color;
+              font-weight: 600;
 
-              .progress-bar {
-                width: 100%;
-                height: 6px;
-                background: $border-color;
-                border-radius: 3px;
-                overflow: hidden;
-                margin-bottom: 0.5rem;
-
-                .progress-fill {
-                  height: 100%;
-                  background: linear-gradient(90deg, $primary-color, $primary-dark);
-                  animation: progress 2s ease-in-out infinite;
-                }
-              }
-
-              span {
-                color: $text-light;
-                font-size: 0.9rem;
+              i {
+                font-size: 1.25rem;
               }
             }
           }
@@ -1233,8 +1238,13 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
 
 // Animations
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
@@ -1242,6 +1252,7 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
     opacity: 0;
     transform: translateX(30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
@@ -1253,6 +1264,7 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
     opacity: 0;
     transform: perspective(1000px) rotateX(-15deg) translateY(50px) scale(0.9);
   }
+
   100% {
     opacity: 1;
     transform: perspective(1000px) rotateX(0) translateY(0) scale(1);
@@ -1260,8 +1272,13 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
 }
 
 @keyframes progress {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(400%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(400%);
+  }
 }
 
 // Responsive Design
@@ -1404,14 +1421,34 @@ $shadow-dark: rgba(0, 0, 0, 0.15);
 }
 
 // Utility Classes
-.text-danger { color: $danger-color; }
-.text-success { color: $success-color; }
-.text-warning { color: $warning-color; }
-.text-primary { color: $primary-color; }
+.text-danger {
+  color: $danger-color;
+}
 
-.bg-danger { background: rgba($danger-color, 0.1); }
-.bg-success { background: rgba($success-color, 0.1); }
-.bg-warning { background: rgba($warning-color, 0.1); }
-.bg-primary { background: rgba($primary-color, 0.1); }
+.text-success {
+  color: $success-color;
+}
 
+.text-warning {
+  color: $warning-color;
+}
 
+.text-primary {
+  color: $primary-color;
+}
+
+.bg-danger {
+  background: rgba($danger-color, 0.1);
+}
+
+.bg-success {
+  background: rgba($success-color, 0.1);
+}
+
+.bg-warning {
+  background: rgba($warning-color, 0.1);
+}
+
+.bg-primary {
+  background: rgba($primary-color, 0.1);
+}

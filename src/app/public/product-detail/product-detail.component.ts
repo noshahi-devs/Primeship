@@ -1,30 +1,32 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Product } from '../../core/models';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { PublicService } from '../../core/services/public.service';
+import { ProductService, ProductDto } from '../../core/services/product.service';
 import { Product3DViewerComponent } from '../../shared/components/product-3d-viewer/product-3d-viewer.component';
+import { Product } from '../../core/models';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, Product3DViewerComponent],
+  imports: [CommonModule, ButtonModule, FormsModule, ReactiveFormsModule, Product3DViewerComponent],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss']
 })
 export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
-  relatedProducts: Product[] = [];
+  relatedProducts: any[] = [];
   quantity: number = 1;
   selectedSize: string = '';
   selectedColor: string = '';
   isLoading = true;
-  
+
   // New properties for enhanced functionality
   activeVisualTab: 'images' | '3d' = 'images';
   activeTab: 'description' | 'specifications' | 'reviews' = 'description';
-  
+
   // Gallery items for product images
   galleryItems = [
     { image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop&crop=center', title: 'Main View' },
@@ -32,7 +34,7 @@ export class ProductDetailComponent implements OnInit {
     { image: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=300&fit=crop&crop=center', title: 'Back View' },
     { image: 'https://images.unsplash.com/photo-1484704849700-f032be544e0e?w=400&h=300&fit=crop&crop=center', title: 'Detail View' }
   ];
-  
+
   // Key features for the product
   keyFeatures = [
     { icon: 'pi pi-volume-up', text: 'Industry-leading noise cancellation' },
@@ -42,7 +44,7 @@ export class ProductDetailComponent implements OnInit {
     { icon: 'pi pi-bluetooth', text: 'Bluetooth 5.0 connectivity' },
     { icon: 'pi pi-shield', text: 'Premium build quality' }
   ];
-  
+
   // Default specifications if none provided
   defaultSpecs = [
     { key: 'Brand', value: 'AudioTech' },
@@ -54,10 +56,10 @@ export class ProductDetailComponent implements OnInit {
     { key: 'Frequency Response', value: '4Hz-40,000Hz' },
     { key: 'Charging Time', value: '3 hours' }
   ];
-  
-  sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  colors = ['#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF', '#FFFF00'];
-  
+
+  sizes: string[] = [];
+  colors: string[] = [];
+
   reviews = [
     {
       author: 'John Doe',
@@ -76,8 +78,10 @@ export class ProductDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private publicService: PublicService,
+    private productService: ProductService,
     private fb: FormBuilder
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProduct();
@@ -86,36 +90,55 @@ export class ProductDetailComponent implements OnInit {
 
   private loadProduct(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
-    
-    // TODO: Replace with actual API call
-    this.product = {
-      id: 'prod-1',
-      name: 'Premium Wireless Headphones',
-      slug: slug || 'premium-wireless-headphones',
-      price: 299,
-      originalPrice: 399,
-      discount: 25,
-      rating: 4,
-      reviewCount: 245,
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center',
-      images: [
-        'https://images.unsplash.com/photo-1484704849700-f032be544e0e?w=400&h=400&fit=crop&crop=center',
-        'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center',
-        'https://images.unsplash.com/photo-1484704849700-f032be544e0e?w=400&h=400&fit=crop&crop=center'
-      ],
-      inStock: true,
-      description: 'Premium wireless headphones with noise cancellation and superior sound quality.',
-      fullDescription: 'Experience premium sound quality with our wireless headphones. Featuring advanced noise cancellation technology, 30-hour battery life, and comfortable over-ear design.',
-      specifications: [
-        { key: 'Brand', value: 'AudioTech' },
-        { key: 'Model', value: 'WH-1000XM4' },
-        { key: 'Battery Life', value: '30 hours' },
-        { key: 'Connectivity', value: 'Bluetooth 5.0' },
-        { key: 'Weight', value: '254g' }
-      ]
-    };
-    
-    this.isLoading = false;
+    if (!slug) {
+      this.router.navigate(['/home']);
+      return;
+    }
+
+    this.isLoading = true;
+    this.publicService.getProductBySlug(slug).subscribe({
+      next: (dto: ProductDto) => {
+        // Parse images
+        const images = this.productService.parseImages(dto.images);
+
+        // Parse sizes and colors
+        this.sizes = this.productService.parseSizeOptions(dto.sizeOptions);
+        this.colors = this.productService.parseColorOptions(dto.colorOptions);
+
+        // Map DTO to template model
+        const originalPrice = dto.resellerMaxPrice;
+        const discount = dto.discountPercentage || 0;
+        const price = originalPrice - (originalPrice * discount / 100);
+
+        this.product = {
+          id: dto.id,
+          name: dto.name,
+          slug: dto.slug,
+          price: price,
+          originalPrice: originalPrice,
+          discount: discount,
+          rating: 4.8,
+          reviewCount: 156,
+          image: images.length > 0 ? images[0] : 'https://via.placeholder.com/400',
+          images: images.length > 0 ? images : ['https://via.placeholder.com/400'],
+          inStock: dto.stockQuantity > 0,
+          description: dto.description,
+          fullDescription: dto.description,
+          category: dto.categoryName,
+          specifications: [
+            { key: 'SKU', value: dto.sku },
+            { key: 'Brand', value: dto.brandName || 'Store Brand' },
+            { key: 'Stock', value: `${dto.stockQuantity} units` }
+          ]
+        };
+
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('❌ Error loading product:', error);
+        this.router.navigate(['/home']);
+      }
+    });
   }
 
   private loadRelatedProducts(): void {
@@ -230,45 +253,11 @@ export class ProductDetailComponent implements OnInit {
         size: this.selectedSize,
         color: this.selectedColor
       });
-      
-      // Navigate directly to checkout with product
-      this.router.navigate(['/checkout'], { 
-        queryParams: { 
-          productId: this.product.id,
-          quantity: this.quantity,
-          size: this.selectedSize,
-          color: this.selectedColor
-        }
-      });
-    }
-  }
 
-  buyNow(): void {
-    if (this.product) {
-      // TODO: Implement buy now functionality (direct checkout)
-      console.log('Buy now:', {
-        product: this.product,
-        quantity: this.quantity,
-        size: this.selectedSize,
-        color: this.selectedColor
-      });
-      
-      // Navigate to checkout with product
-      this.router.navigate(['/checkout'], { 
-        queryParams: { 
-          productId: this.product.id,
-          quantity: this.quantity,
-          size: this.selectedSize,
-          color: this.selectedColor
-        }
-      });
-    }
-  }
-
-  onRelatedProductClick(product: Product): void {
-    // Navigate to the related product's detail page
-    if (product && product.slug) {
-      this.router.navigate(['/product', product.slug]);
+      // Show success message
+      alert('Product added to cart!');
+    } else {
+      alert('Please select size and color');
     }
   }
 
@@ -279,7 +268,7 @@ export class ProductDetailComponent implements OnInit {
       alert('Product added to wishlist!');
     }
   }
-  
+
   // Additional properties for related products
   isLoadingMore = false;
   allRelatedProducts: Product[] = [];
@@ -297,9 +286,9 @@ export class ProductDetailComponent implements OnInit {
   // Load all related products functionality
   loadAllRelatedProducts(): void {
     if (this.isLoadingMore) return;
-    
+
     this.isLoadingMore = true;
-    
+
     // Simulate API call to load more products
     setTimeout(() => {
       // Generate more related products
@@ -393,7 +382,7 @@ export class ProductDetailComponent implements OnInit {
           category: 'electronics'
         }
       ];
-      
+
       // Combine existing and new products
       this.allRelatedProducts = [...this.relatedProducts, ...additionalProducts];
       this.relatedProducts = this.allRelatedProducts;

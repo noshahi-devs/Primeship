@@ -1,37 +1,9 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-
-interface Product {
-  id: number;
-  name: string;
-  sku: string;
-  slug: string;
-  description: string;
-  category: string;
-  categoryId: number;
-  price: number;
-  discountPrice: number;
-  stock: number;
-  status: 'active' | 'inactive';
-  featured: boolean;
-  images: string[];
-  metaTitle: string;
-  metaDescription: string;
-  createdAt: Date;
-}
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Toast {
-  id: number;
-  message: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-}
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ProductService, ProductDto, CreateProductDto, UpdateProductDto } from '../../../core/services/product.service';
+import { CategoryService, CategoryDto } from '../../../core/services/category.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-products',
@@ -49,14 +21,14 @@ export class ProductsComponent implements OnInit {
   editProductModalVisible = false;
   deleteConfirmationVisible = false;
   viewProductModalVisible = false;
-  productToDelete: Product | null = null;
-  selectedProduct: Product | null = null;
+  productToDelete: ProductDto | null = null;
+  selectedProduct: ProductDto | null = null;
 
   // Data
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
-  paginatedProducts: Product[] = [];
-  categories: Category[] = [];
+  products: ProductDto[] = [];
+  filteredProducts: ProductDto[] = [];
+  paginatedProducts: ProductDto[] = [];
+  categories: CategoryDto[] = [];
 
   // Forms
   addProductForm!: FormGroup;
@@ -67,237 +39,148 @@ export class ProductsComponent implements OnInit {
   itemsPerPage = 10;
   totalPages = 1;
   searchTerm = '';
-  selectedStatusFilter: string | null = null;
-  selectedCategoryFilter: number | null = null;
+  selectedStatusFilter: boolean | null = null;
+  selectedCategoryFilter: string | null = null;
 
-  // Image upload
-  selectedImage: string | null = null;
-  imagePreviewUrls: string[] = [];
-  isUploading = false;
+  // Image management
+  imageUrls: string[] = [];
+  currentImageUrl = '';
 
-  // Toast
-  toasts: Toast[] = [];
-  private toastId = 0;
+  // Loading state
+  isLoading = false;
+  isCategoriesLoading = false;
 
-  constructor(private fb: FormBuilder) {}
+  // Template compatibility properties
+  imagePreviewUrls: string[] = []; // For template compatibility
+  isUploading = false; // For template compatibility
+
+
+  constructor(
+    private fb: FormBuilder,
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
+    console.log('🔄 ProductsComponent initialized');
     this.initForms();
-    this.loadDummyData();
     this.loadCategories();
-    this.filterTable();
+    this.loadProducts();
   }
 
   private initForms(): void {
     this.addProductForm = this.fb.group({
-      // Basic Information
       name: ['', [Validators.required, Validators.minLength(3)]],
-      sku: ['', [Validators.required]],
-      slug: ['', [Validators.required, Validators.pattern('^[a-z0-9-]+$')]],
-      description: ['', [Validators.required, Validators.minLength(20)]],
-      categoryId: [null, [Validators.required]],
-      
-      // Pricing
+      sku: [{ value: '', disabled: true }, [Validators.required]],
+      categoryId: ['', [Validators.required]],
+      description: ['', [Validators.required, Validators.minLength(10)]],
       price: [0, [Validators.required, Validators.min(0)]],
-      discountPrice: [0, [Validators.min(0)]],
+      discountPercentage: [0, [Validators.min(0), Validators.max(100)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      
-      // Status
-      status: [true],
-      featured: [false],
-      
-      // SEO
-      metaTitle: [''],
-      metaDescription: ['', [Validators.maxLength(160)]]
+      status: [true]
     });
 
     this.editProductForm = this.fb.group({
-      id: [null],
+      id: [''],
       name: ['', [Validators.required, Validators.minLength(3)]],
-      sku: ['', [Validators.required]],
-      slug: ['', [Validators.required, Validators.pattern('^[a-z0-9-]+$')]],
-      description: ['', [Validators.required, Validators.minLength(20)]],
-      categoryId: [null, [Validators.required]],
+      sku: [{ value: '', disabled: true }, [Validators.required]],
+      categoryId: ['', [Validators.required]],
+      description: ['', [Validators.required, Validators.minLength(10)]],
       price: [0, [Validators.required, Validators.min(0)]],
-      discountPrice: [0, [Validators.min(0)]],
+      discountPercentage: [0, [Validators.min(0), Validators.max(100)]],
       stock: [0, [Validators.required, Validators.min(0)]],
-      status: [true],
-      featured: [false],
-      metaTitle: [''],
-      metaDescription: ['', [Validators.maxLength(160)]]
+      status: [true]
     });
 
-    // Auto-generate slug from name
-    this.addProductForm.get('name')?.valueChanges.subscribe(name => {
-      if (name && this.addProductForm.get('slug')?.pristine) {
-        const slug = name.toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-');
-        this.addProductForm.patchValue({ slug }, { emitEvent: false });
-      }
-    });
-
-    // Auto-generate meta title from name if empty
-    this.addProductForm.get('name')?.valueChanges.subscribe(name => {
-      if (name && !this.addProductForm.get('metaTitle')?.value) {
-        this.addProductForm.patchValue({ metaTitle: name }, { emitEvent: false });
-      }
-    });
-
-    // Auto-generate SKU if empty
-    this.addProductForm.get('name')?.valueChanges.subscribe(name => {
-      if (name && !this.addProductForm.get('sku')?.value) {
-        const sku = `SKU-${name.substring(0, 3).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-        this.addProductForm.patchValue({ sku }, { emitEvent: false });
-      }
-    });
+    // Auto-generate SKU and Slug when name or category changes
+    this.addProductForm.get('name')?.valueChanges.subscribe(() => this.updateGeneratedFields());
+    this.addProductForm.get('categoryId')?.valueChanges.subscribe(() => this.updateGeneratedFields());
   }
 
-  private loadDummyData(): void {
-    this.products = [
-      {
-        id: 1,
-        name: 'iPhone 15 Pro',
-        sku: 'SKU-IPH15P-2024',
-        slug: 'iphone-15-pro',
-        description: 'Latest Apple iPhone with advanced camera system and A17 Pro chip',
-        category: 'Smartphones',
-        categoryId: 1,
-        price: 999,
-        discountPrice: 899,
-        stock: 45,
-        status: 'active',
-        featured: true,
-        images: ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop'],
-        metaTitle: 'iPhone 15 Pro - Buy Now',
-        metaDescription: 'Get the latest iPhone 15 Pro with amazing features and camera',
-        createdAt: new Date('2024-01-15')
-      },
-      {
-        id: 2,
-        name: 'MacBook Pro 16"',
-        sku: 'SKU-MBP16-2024',
-        slug: 'macbook-pro-16',
-        description: 'Powerful laptop with M3 Max chip for professionals',
-        category: 'Laptops',
-        categoryId: 2,
-        price: 2499,
-        discountPrice: 2299,
-        stock: 22,
-        status: 'active',
-        featured: true,
-        images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h-400&fit=crop'],
-        metaTitle: 'MacBook Pro 16" - Professional Laptop',
-        metaDescription: 'Powerful MacBook Pro with M3 chip for maximum performance',
-        createdAt: new Date('2024-01-10')
-      },
-      {
-        id: 3,
-        name: 'Sony WH-1000XM5',
-        sku: 'SKU-SONYWH-1000',
-        slug: 'sony-wh-1000xm5',
-        description: 'Noise cancelling wireless headphones with premium sound',
-        category: 'Audio',
-        categoryId: 3,
-        price: 399,
-        discountPrice: 349,
-        stock: 78,
-        status: 'active',
-        featured: false,
-        images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop'],
-        metaTitle: 'Sony WH-1000XM5 Headphones',
-        metaDescription: 'Premium noise cancelling headphones with exceptional sound quality',
-        createdAt: new Date('2024-01-05')
-      },
-      {
-        id: 4,
-        name: 'Nike Air Max 270',
-        sku: 'SKU-NIKE270-2024',
-        slug: 'nike-air-max-270',
-        description: 'Comfortable sneakers with Max Air cushioning',
-        category: 'Footwear',
-        categoryId: 4,
-        price: 150,
-        discountPrice: 120,
-        stock: 120,
-        status: 'active',
-        featured: false,
-        images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop'],
-        metaTitle: 'Nike Air Max 270 - Running Shoes',
-        metaDescription: 'Comfortable running shoes with air cushioning technology',
-        createdAt: new Date('2024-01-20')
-      },
-      {
-        id: 5,
-        name: 'Samsung 4K Smart TV',
-        sku: 'SKU-SAMSUNGTV-65',
-        slug: 'samsung-4k-smart-tv',
-        description: '65" 4K UHD Smart TV with Quantum Processor',
-        category: 'Televisions',
-        categoryId: 5,
-        price: 799,
-        discountPrice: 699,
-        stock: 15,
-        status: 'inactive',
-        featured: false,
-        images: ['https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=400&fit=crop'],
-        metaTitle: 'Samsung 65" 4K Smart TV',
-        metaDescription: 'Ultra HD Smart TV with brilliant colors and smart features',
-        createdAt: new Date('2024-01-12')
-      },
-      {
-        id: 6,
-        name: 'Dyson V15 Detect',
-        sku: 'SKU-DYSONV15-2024',
-        slug: 'dyson-v15-detect',
-        description: 'Cordless vacuum with laser dust detection',
-        category: 'Home Appliances',
-        categoryId: 6,
-        price: 699,
-        discountPrice: 649,
-        stock: 32,
-        status: 'active',
-        featured: true,
-        images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop'],
-        metaTitle: 'Dyson V15 Detect Cordless Vacuum',
-        metaDescription: 'Powerful cordless vacuum with advanced cleaning technology',
-        createdAt: new Date('2024-01-18')
-      }
-    ];
-  }
+  private updateGeneratedFields(): void {
+    const name = this.addProductForm.get('name')?.value;
+    const categoryId = this.addProductForm.get('categoryId')?.value;
 
-  private loadCategories(): void {
-    this.categories = [
-      { id: 1, name: 'Smartphones' },
-      { id: 2, name: 'Laptops' },
-      { id: 3, name: 'Audio' },
-      { id: 4, name: 'Footwear' },
-      { id: 5, name: 'Televisions' },
-      { id: 6, name: 'Home Appliances' },
-      { id: 7, name: 'Clothing' },
-      { id: 8, name: 'Accessories' }
-    ];
-  }
+    if (name && categoryId) {
+      const category = this.categories.find(c => c.id === categoryId);
+      const prefix = category ?
+        category.name.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 3) :
+        'PRD';
 
-  // Toast Methods
-  showToast(message: string, type: Toast['type'] = 'info'): void {
-    const id = ++this.toastId;
-    this.toasts.push({ id, message, type });
-    setTimeout(() => this.removeToast(id), 5000);
-  }
+      const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+      const sku = `${prefix}-${randomStr}`;
 
-  removeToast(id: number): void {
-    this.toasts = this.toasts.filter(toast => toast.id !== id);
-  }
-
-  getToastIcon(type: string): string {
-    switch(type) {
-      case 'success': return 'pi pi-check-circle';
-      case 'error': return 'pi pi-times-circle';
-      case 'warning': return 'pi pi-exclamation-triangle';
-      default: return 'pi pi-info-circle';
+      this.addProductForm.patchValue({
+        sku: sku
+      }, { emitEvent: false });
     }
+  }
+
+  private generateRandomStock(): number {
+    return Math.floor(Math.random() * (250 - 43 + 1)) + 43;
+  }
+
+  private isNameDuplicate(name: string, excludeId?: string): boolean {
+    return this.products.some(p =>
+      p.name.toLowerCase().trim() === name.toLowerCase().trim() && p.id !== excludeId
+    );
+  }
+
+  // Load Categories from API
+  loadCategories(): void {
+    console.log('📥 Loading categories...');
+    this.isCategoriesLoading = true;
+
+    this.categoryService.getAll().subscribe({
+      next: (categories) => {
+        console.log('✅ Categories loaded:', categories.length);
+        this.categories = categories;
+        this.isCategoriesLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Error loading categories:', error);
+        this.toastService.showError('Failed to load categories');
+        this.isCategoriesLoading = false;
+      }
+    });
+  }
+
+  // Load Products from API
+  loadProducts(): void {
+    console.log('📥 Loading products...');
+    this.isLoading = true;
+
+    this.productService.getAll().subscribe({
+      next: (products) => {
+        console.log('✅ Products loaded:', products.length);
+
+        // Add template compatibility properties
+        this.products = products.map(p => ({
+          ...p,
+          images: this.productService.parseImages(p.images as string), // Parse JSON string to array
+          category: p.categoryName, // Alias
+          price: p.resellerMaxPrice, // Use reseller price as base
+          discountPrice: p.discountPercentage > 0 ? p.resellerMaxPrice - (p.resellerMaxPrice * p.discountPercentage / 100) : 0,
+          stock: p.stockQuantity, // Alias
+          featured: false, // Default
+          metaTitle: p.name, // Default
+          metaDescription: p.description, // Default
+          createdAt: new Date() // Default
+        }));
+
+        this.filterTable();
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('❌ Error loading products:', error);
+        this.toastService.showError('Failed to load products');
+        this.isLoading = false;
+      }
+    });
   }
 
   // Product CRUD Operations
@@ -305,18 +188,16 @@ export class ProductsComponent implements OnInit {
     this.addProductForm.reset({
       name: '',
       sku: '',
-      slug: '',
+      categoryId: '',
       description: '',
-      categoryId: null,
       price: 0,
-      discountPrice: 0,
-      stock: 0,
-      status: true,
-      featured: false,
-      metaTitle: '',
-      metaDescription: ''
+      discountPercentage: 0,
+      stock: this.generateRandomStock(),
+      status: true
     });
+    this.imageUrls = [];
     this.imagePreviewUrls = [];
+    this.currentImageUrl = '';
     this.addProductModalVisible = true;
   }
 
@@ -324,27 +205,27 @@ export class ProductsComponent implements OnInit {
     this.addProductModalVisible = false;
   }
 
-  openEditProductModal(product: Product): void {
-    // If Edit is triggered from the View modal, close View first so Edit becomes active/visible.
+  openEditProductModal(product: ProductDto): void {
     this.viewProductModalVisible = false;
-
     this.selectedProduct = product;
+
+    // Parse images safely
+    const images = Array.isArray(product.images) ? product.images : this.productService.parseImages(product.images);
+    this.imageUrls = [...images];
+    this.imagePreviewUrls = [...images]; // For template compatibility
+
     this.editProductForm.patchValue({
       id: product.id,
       name: product.name,
       sku: product.sku,
-      slug: product.slug,
-      description: product.description,
       categoryId: product.categoryId,
-      price: product.price,
-      discountPrice: product.discountPrice,
-      stock: product.stock,
-      status: product.status === 'active',
-      featured: product.featured,
-      metaTitle: product.metaTitle,
-      metaDescription: product.metaDescription
+      description: product.description,
+      price: product.resellerMaxPrice,
+      discountPercentage: product.discountPercentage,
+      stock: product.stockQuantity,
+      status: product.status
     });
-    this.imagePreviewUrls = [...product.images];
+
     this.editProductModalVisible = true;
   }
 
@@ -353,7 +234,7 @@ export class ProductsComponent implements OnInit {
     this.selectedProduct = null;
   }
 
-  openViewProductModal(product: Product): void {
+  openViewProductModal(product: ProductDto): void {
     this.selectedProduct = product;
     this.viewProductModalVisible = true;
   }
@@ -363,7 +244,7 @@ export class ProductsComponent implements OnInit {
     this.selectedProduct = null;
   }
 
-  openDeleteConfirmation(product: Product): void {
+  openDeleteConfirmation(product: ProductDto): void {
     this.productToDelete = product;
     this.deleteConfirmationVisible = true;
   }
@@ -375,194 +256,205 @@ export class ProductsComponent implements OnInit {
 
   confirmDelete(): void {
     if (this.productToDelete) {
-      const index = this.products.findIndex(p => p.id === this.productToDelete!.id);
-      if (index > -1) {
-        this.products.splice(index, 1);
-        this.showToast(`Product "${this.productToDelete.name}" deleted successfully`, 'success');
-        this.filterTable();
-      }
-    }
-    this.cancelDelete();
-  }
+      console.log('🗑️ Deleting product:', this.productToDelete.name);
 
-  // Image Upload Methods
-  onImageSelect(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.isUploading = true;
-      
-      // Simulate upload delay
-      setTimeout(() => {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.imagePreviewUrls.push(e.target.result);
-          this.isUploading = false;
-        };
-        reader.readAsDataURL(file);
-      }, 1000);
+      this.productService.delete(this.productToDelete.id).subscribe({
+        next: () => {
+          console.log('✅ Product deleted successfully');
+          this.toastService.showSuccess(`Product "${this.productToDelete!.name}" deleted successfully`);
+          this.loadProducts();
+          this.cancelDelete();
+        },
+        error: (error) => {
+          console.error('❌ Error deleting product:', error);
+          this.toastService.showError('Failed to delete product');
+          this.cancelDelete();
+        }
+      });
     }
   }
 
-  onEditImageSelect(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.isUploading = true;
-      
-      setTimeout(() => {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.imagePreviewUrls.push(e.target.result);
-          this.isUploading = false;
-        };
-        reader.readAsDataURL(file);
-      }, 1000);
+  // Image Management
+  addImageUrl(): void {
+    if (this.currentImageUrl.trim()) {
+      this.imageUrls.push(this.currentImageUrl.trim());
+      this.currentImageUrl = '';
     }
   }
 
   removeImage(index: number): void {
+    this.imageUrls.splice(index, 1);
     this.imagePreviewUrls.splice(index, 1);
   }
 
-  // File input trigger methods
-  triggerFileInput(): void {
-    if (this.fileInput) {
-      this.fileInput.nativeElement.click();
+  onPaste(event: ClipboardEvent): void {
+    const items = event.clipboardData?.items;
+    if (items) {
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            this.handleFileUpload(file);
+          }
+        }
+      }
     }
   }
 
-  triggerEditFileInput(): void {
-    if (this.editFileInput) {
-      this.editFileInput.nativeElement.click();
+  private handleFileUpload(file: File): void {
+    if (file.size > 2 * 1024 * 1024) {
+      this.toastService.showError('Image size should be less than 2MB');
+      return;
     }
+
+    this.isUploading = true;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const result = e.target.result;
+      this.imageUrls.push(result);
+      this.imagePreviewUrls.push(result);
+      this.isUploading = false;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
   }
 
   saveProduct(): void {
     if (this.addProductForm.invalid) {
-      this.showToast('Please fill all required fields correctly', 'error');
+      this.toastService.showError('Please fill all required fields correctly');
       return;
     }
 
-    const formValue = this.addProductForm.value;
-    const newProduct: Product = {
-      id: Math.max(...this.products.map(p => p.id), 0) + 1,
+    const formValue = this.addProductForm.getRawValue();
+
+    // Duplication check
+    if (this.isNameDuplicate(formValue.name)) {
+      this.toastService.showError('A product with this name already exists');
+      return;
+    }
+
+    const input: CreateProductDto = {
       name: formValue.name,
       sku: formValue.sku,
-      slug: formValue.slug,
-      description: formValue.description,
-      category: this.categories.find(c => c.id === formValue.categoryId)?.name || '',
       categoryId: formValue.categoryId,
-      price: formValue.price,
-      discountPrice: formValue.discountPrice,
-      stock: formValue.stock,
-      status: formValue.status ? 'active' : 'inactive',
-      featured: formValue.featured,
-      images: this.imagePreviewUrls.length > 0 ? this.imagePreviewUrls : ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop'],
-      metaTitle: formValue.metaTitle,
-      metaDescription: formValue.metaDescription,
-      createdAt: new Date()
+      description: formValue.description,
+      brandName: '',
+      images: this.productService.stringifyImages(this.imageUrls),
+      supplierPrice: formValue.price * 0.7, // Assume 70% cost
+      resellerMaxPrice: formValue.price,
+      discountPercentage: formValue.discountPercentage,
+      stockQuantity: formValue.stock,
+      status: formValue.status,
+      slug: this.productService.generateSlug(formValue.name)
     };
 
-    this.products.unshift(newProduct);
-    this.showToast('Product added successfully', 'success');
-    this.closeAddProductModal();
-    this.filterTable();
+    console.log('💾 Creating product:', input);
+
+    this.productService.create(input).subscribe({
+      next: (result) => {
+        console.log('✅ Product created:', result);
+        this.toastService.showSuccess('Product added successfully');
+        this.closeAddProductModal();
+        this.loadProducts();
+      },
+      error: (error) => {
+        console.error('❌ Error creating product:', error);
+        this.toastService.showError('Failed to create product');
+      }
+    });
   }
 
   updateProduct(): void {
     if (this.editProductForm.invalid) {
-      this.showToast('Please fill all required fields correctly', 'error');
+      this.toastService.showError('Please fill all required fields correctly');
       return;
     }
 
-    const formValue = this.editProductForm.value;
-    const index = this.products.findIndex(p => p.id === formValue.id);
-    
-    if (index > -1) {
-      this.products[index] = {
-        ...this.products[index],
-        name: formValue.name,
-        sku: formValue.sku,
-        slug: formValue.slug,
-        description: formValue.description,
-        category: this.categories.find(c => c.id === formValue.categoryId)?.name || '',
-        categoryId: formValue.categoryId,
-        price: formValue.price,
-        discountPrice: formValue.discountPrice,
-        stock: formValue.stock,
-        status: formValue.status ? 'active' : 'inactive',
-        featured: formValue.featured,
-        images: this.imagePreviewUrls.length > 0 ? this.imagePreviewUrls : this.products[index].images,
-        metaTitle: formValue.metaTitle,
-        metaDescription: formValue.metaDescription
-      };
+    const formValue = this.editProductForm.getRawValue();
 
-      this.showToast('Product updated successfully', 'success');
-      this.closeEditProductModal();
-      this.filterTable();
+    // Duplication check
+    if (this.isNameDuplicate(formValue.name, formValue.id)) {
+      this.toastService.showError('Another product with this name already exists');
+      return;
     }
+
+    const input: UpdateProductDto = {
+      id: formValue.id,
+      name: formValue.name,
+      sku: formValue.sku,
+      categoryId: formValue.categoryId,
+      description: formValue.description,
+      brandName: '',
+      images: this.productService.stringifyImages(this.imageUrls),
+      supplierPrice: formValue.price * 0.7,
+      resellerMaxPrice: formValue.price,
+      discountPercentage: formValue.discountPercentage,
+      stockQuantity: formValue.stock,
+      status: formValue.status,
+      slug: this.productService.generateSlug(formValue.name)
+    };
+
+    console.log('💾 Updating product:', input);
+
+    this.productService.update(input).subscribe({
+      next: (result) => {
+        console.log('✅ Product updated:', result);
+        this.toastService.showSuccess('Product updated successfully');
+        this.closeEditProductModal();
+        this.loadProducts();
+      },
+      error: (error) => {
+        console.error('❌ Error updating product:', error);
+        this.toastService.showError('Failed to update product');
+      }
+    });
   }
 
   // Helper Methods
-  getCategoryName(categoryId: number): string {
+  getCategoryName(categoryId: string): string {
     const category = this.categories.find(c => c.id === categoryId);
     return category ? category.name : '-';
   }
 
-  getStatusLabel(status: string): string {
-    return status === 'active' ? 'Active' : 'Inactive';
+  getStatusLabel(status: boolean): string {
+    return status ? 'Active' : 'Inactive';
   }
 
   getDiscountPercentage(price: number, discountPrice: number): string {
-    if (discountPrice && price > 0) {
-      const discount = ((price - discountPrice) / price) * 100;
-      return `${discount.toFixed(0)}% OFF`;
-    }
-    return '';
+    if (!price || !discountPrice || discountPrice >= price) return '';
+    const percentage = Math.round(((price - discountPrice) / price) * 100);
+    return `-${percentage}%`;
   }
 
-  // Pagination Methods
-  getStartIndex(): number {
-    return (this.currentPage - 1) * this.itemsPerPage + 1;
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price || 0);
   }
 
-  getEndIndex(): number {
-    return Math.min(this.currentPage * this.itemsPerPage, this.filteredProducts.length);
-  }
-
-  getPageNumbers(): number[] {
-    const pageNumbers = [];
-    const maxPagesToShow = 5;
-    
-    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
-    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
-    
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-    
-    return pageNumbers;
+  getFirstImage(product: ProductDto): string {
+    const images = this.productService.parseImages(product.images);
+    return images.length > 0 ? images[0] : 'https://via.placeholder.com/400x400?text=No+Image';
   }
 
   // Table Operations
   filterTable(): void {
     let filtered = [...this.products];
 
-    // Apply search filter
-    if (this.searchTerm) {
-      const searchLower = this.searchTerm.toLowerCase();
+    // Apply search filter - trim to handle whitespace
+    const trimmedSearch = this.searchTerm?.trim() || '';
+    if (trimmedSearch) {
+      const searchLower = trimmedSearch.toLowerCase();
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchLower) ||
         product.sku.toLowerCase().includes(searchLower) ||
-        product.category.toLowerCase().includes(searchLower)
+        product.categoryName?.toLowerCase().includes(searchLower)
       );
     }
 
     // Apply status filter
-    if (this.selectedStatusFilter) {
+    if (this.selectedStatusFilter !== null) {
       filtered = filtered.filter(product => product.status === this.selectedStatusFilter);
     }
 
@@ -578,7 +470,7 @@ export class ProductsComponent implements OnInit {
   private updatePagination(): void {
     this.totalPages = Math.ceil(this.filteredProducts.length / this.itemsPerPage);
     this.currentPage = Math.min(this.currentPage, this.totalPages || 1);
-    
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     this.paginatedProducts = this.filteredProducts.slice(startIndex, endIndex);
@@ -596,10 +488,98 @@ export class ProductsComponent implements OnInit {
     this.selectedStatusFilter = null;
     this.selectedCategoryFilter = null;
     this.filterTable();
+    this.cdr.detectChanges();
   }
 
-  // Format price
-  formatPrice(price: number): string {
-    return `$${price.toFixed(2)}`;
+  // Pagination helpers
+  getStartIndex(): number {
+    return (this.currentPage - 1) * this.itemsPerPage + 1;
+  }
+
+  getEndIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.filteredProducts.length);
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPages = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPages / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPages - 1);
+
+    if (endPage - startPage < maxPages - 1) {
+      startPage = Math.max(1, endPage - maxPages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  // ========== TEMPLATE COMPATIBILITY METHODS ==========
+  // These exist for compatibility with the existing HTML template
+
+  toasts: any[] = [];
+
+  removeToast(id: number): void {
+    // No-op - using ToastService
+  }
+
+  getToastIcon(type: string): string {
+    return 'pi pi-info-circle';
+  }
+
+  // Image upload methods (for template compatibility)
+  triggerFileInput(): void {
+    if (this.fileInput) {
+      this.fileInput.nativeElement.click();
+    }
+  }
+
+  triggerEditFileInput(): void {
+    if (this.editFileInput) {
+      this.editFileInput.nativeElement.click();
+    }
+  }
+
+  onImageSelect(event: any): void {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      Array.from(files).forEach((file: any) => {
+        this.handleFileUpload(file);
+      });
+    }
+  }
+
+  onEditImageSelect(event: any): void {
+    this.onImageSelect(event);
+  }
+
+  // ========== NULL-SAFETY HELPER METHODS ==========
+  // These methods safely handle optional properties
+
+  getProductStock(product: ProductDto): number {
+    return product.stock || product.stockQuantity || 0;
+  }
+
+  getProductPrice(product: ProductDto): number {
+    return product.price || product.resellerMaxPrice || 0;
+  }
+
+  getProductDiscountPrice(product: ProductDto): number {
+    return product.discountPrice || 0;
+  }
+
+  getStatusClass(status: boolean): string {
+    return status ? 'active' : 'inactive';
+  }
+
+  safeFormatPrice(price: number | undefined): string {
+    return this.formatPrice(price || 0);
+  }
+
+  safeGetDiscountPercentage(price: number | undefined, discountPrice: number | undefined): string {
+    return this.getDiscountPercentage(price || 0, discountPrice || 0);
   }
 }
